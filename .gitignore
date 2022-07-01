@@ -1,0 +1,10 @@
+node_modules
+src/**/*.js
+src/**/*.js.map
+dist/
+**/.cache/
+config.jsonwork/
+work/
+test/sources/**/*.class
+work-cache/
+config.json

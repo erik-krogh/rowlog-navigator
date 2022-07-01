@@ -1,0 +1,387 @@
+import * as https from "https";
+import Cache from "../util/localcache";
+import { getConfig } from "../util/config";
+
+function auth() {
+  const config = getConfig();
+  return Buffer.from(`${config.USER_NAME}:${config.PASSWORD}`).toString(
+    "base64"
+  );
+}
+
+type RawRower = {
+  memberId: number;
+  rowerName: string;
+  isMinor: boolean;
+  longRow: boolean;
+  coxswain: boolean;
+};
+
+type RawTrip = {
+  id: number;
+  description: string;
+  distance: number;
+  createdDateTime: string;
+  startDateTime: string;
+  updatedDateTime: string;
+  endDateTime: string;
+  completed: boolean;
+  excludeFromStats: boolean;
+  boatId: string;
+  boatName: string;
+  routeId: number;
+  participants: RawRower[];
+};
+
+export type Trip = {
+  id: number;
+  description: string;
+  distance: number;
+  createdDateTime: Date;
+  startDateTime: Date;
+  updatedDateTime: Date;
+  endDateTime: Date;
+  completed: true; // filtered out if they are not completed
+  excludeFromStats: false; // also filtered out
+  boatId: number;
+  boatName: string;
+  routeId: number;
+  participants: RawRower[];
+};
+
+export type RowerDetails = Pick<RawRower, "memberId" | "rowerName">;
+
+export class TripData {
+  private rowers = new Map<number, RowerDetails>();
+  private boats = new Map<number, string>();
+  constructor(private trips: Trip[]) {
+    for (const trip of trips) {
+      for (const rower of trip.participants) {
+        this.rowers.set(rower.memberId, rower);
+      }
+      this.boats.set(trip.boatId, trip.boatName);
+    }
+  }
+
+  getTrips(): Trip[] {
+    return this.trips;
+  }
+
+  getBoatName(id: number) {
+    return this.boats.get(id);
+  }
+
+  getAllBoatIds(): number[] {
+    return Array.from(this.boats.keys());
+  }
+
+  getAllRowerIds(): number[] {
+    return this.trips
+      .reduce((acc, trip) => {
+        return acc.concat(trip.participants.map((p) => p.memberId));
+      }, [] as number[])
+      .filter((x) => x); // guests have no memberId, and are filtered out
+  }
+
+  getRowerDetails(rowerId: number): RowerDetails {
+    return this.rowers.get(rowerId);
+  }
+
+  getAllTripsForRower(rowerId: number): Trip[] {
+    return this.trips.filter((trip) =>
+      trip.participants.some((p) => p.memberId === rowerId)
+    );
+  }
+}
+
+let tripPromise: null | Promise<TripData> = null;
+export function trips(): Promise<TripData> {
+  if (tripPromise) {
+    return tripPromise;
+  }
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  return (tripPromise = fetchTrips(
+    "2021-11-01",
+    yesterday.toISOString().substring(0, 10)
+  ));
+}
+
+async function fetchTrips(
+  startDateRaw: string,
+  endDateRaw: string
+): Promise<TripData> {
+  const fetcher = new Cache("fetchTrips", (date) => {
+    const prevDate = new Date(date);
+    prevDate.setDate(prevDate.getDate() - 1);
+    return fetchTripsRaw(prevDate.toISOString().substring(0, 10), date, auth());
+  });
+
+  const seenTripIds = new Set<number>();
+  const rawTrips: RawTrip[] = [];
+  // iterate each date between start and end
+  const startDate = new Date(startDateRaw);
+  const endDate = new Date(endDateRaw);
+  const promises: Promise<void>[] = [];
+  for (
+    let date = startDate;
+    date <= endDate;
+    date.setDate(date.getDate() + 1)
+  ) {
+    const dateStr = date.toISOString().substring(0, 10);
+    promises.push(
+      new Promise((resolve, reject) => {
+        fetcher
+          .get(dateStr)
+          .then((data) => {
+            for (const rawTrip of JSON.parse(data) as RawTrip[]) {
+              if (!seenTripIds.has(rawTrip.id)) {
+                seenTripIds.add(rawTrip.id);
+                rawTrips.push(rawTrip);
+              }
+            }
+            resolve();
+          })
+          .catch(reject);
+      })
+    );
+  }
+
+  await Promise.all(promises);
+
+  const trips: Trip[] = rawTrips
+    .filter((trip) => trip.completed && !trip.excludeFromStats)
+    .map((rawTrip) => {
+      return {
+        id: rawTrip.id,
+        description: rawTrip.description,
+        distance: rawTrip.distance,
+        createdDateTime: new Date(rawTrip.createdDateTime),
+        startDateTime: new Date(rawTrip.startDateTime),
+        updatedDateTime: new Date(rawTrip.updatedDateTime),
+        endDateTime: new Date(rawTrip.endDateTime),
+        completed: true,
+        excludeFromStats: false,
+        boatId: Number(rawTrip.boatId),
+        boatName: rawTrip.boatName,
+        routeId: rawTrip.routeId,
+        participants: rawTrip.participants,
+      };
+    });
+
+  return new TripData(trips);
+}
+
+/** fetches the 100 most recent trips within the date range. */
+function fetchTripsRaw(
+  startDate: string,
+  endDate: string,
+  auth: string
+): Promise<string> {
+  const url = `https://rowlog.com/api/trips?to=${endDate}&from=${startDate}`;
+
+  return fetch(url);
+}
+
+function fetch(url: string): Promise<string> {
+  const config = getConfig();
+  const headers = {
+    "X-ClubId": config.SITE_ID,
+    Authorization: `Basic ${auth()}`,
+  };
+
+  return new Promise((resolve, reject) => {
+    https.get(
+      url,
+      {
+        headers,
+      },
+      (res) => {
+        let data = "";
+        res.on("data", (chunk) => {
+          data += chunk.toString();
+        });
+        res.on("end", () => {
+          resolve(data);
+        });
+        res.on("error", (err) => {
+          reject(err);
+        });
+      }
+    );
+  });
+}
+
+type PermissionRaw = {
+  memberId: number;
+  permissionId: number;
+  permission: {
+    id: number;
+    condition: string;
+    conditionPeriod: string;
+    conditionQty: number;
+    conditionType: string;
+    coxswainPermission: boolean;
+    description: string;
+    permissionCode: string;
+    winterPermission: false;
+  };
+};
+
+type MemberRaw = {
+  address: string;
+  address2: string;
+  birthDate: string;
+  blocked: boolean;
+  boatAdmin: boolean;
+  boatRental: boolean;
+  city: string;
+  comment: string;
+  contactEmailAddress: string;
+  contactName: string;
+  contactPhoneNo: string;
+  emailAddress: string;
+  emailEvents: boolean;
+  enrolmentDate: boolean;
+  guest: boolean;
+  id: number;
+  keyNo: string;
+  lastVisitDateTime: string;
+  loginCount: number;
+  memberAdmin: boolean;
+  memberTypeId: number;
+  membershipFee: boolean;
+  membershipFeeDate: string;
+  mobilePhoneNo: string;
+  name: string;
+  newsletter: boolean;
+  permissionCode: string;
+  phoneNo: string;
+  picture: string;
+  postCode: string;
+  releasedDate: string;
+  sex: string;
+  systemAdmin: boolean;
+  userName: string;
+  memberPermissions: PermissionRaw[];
+};
+
+export type Member = {
+  id: number;
+  name: string;
+  birthDate?: Date;
+  address: string;
+  email: string;
+  newsletter: boolean; // subscribed to rowlog
+  phone: string;
+  boatAdmin: boolean;
+  systemAdmin: boolean;
+  permissions: string;
+  raw: MemberRaw;
+  memberType: string;
+};
+
+export class MemberData {
+  members: Member[];
+  private idToMember: Map<number, Member> = new Map();
+  private nameToMember: Map<string, Member> = new Map();
+
+  constructor(members: Member[]) {
+    this.members = members;
+    this.idToMember = new Map();
+    for (const member of members) {
+      this.idToMember.set(member.id, member);
+      this.nameToMember.set(member.name, member);
+    }
+  }
+
+  getMember(memberId: number): Member {
+    return this.members.find((member) => member.id === memberId);
+  }
+
+  getMemberByName(name: string): Member {
+    name = name.replace(/\s+/g, " ").trim();
+    return this.members.find(
+      (member) => member.name.replace(/\s+/g, " ").trim() === name
+    );
+  }
+
+  getAllMembers(): Member[] {
+    return this.members;
+  }
+}
+
+let memberPromise: null | Promise<MemberData> = null;
+export function members(): Promise<MemberData> {
+  return (
+    memberPromise ||
+    (memberPromise = fetchMembers().then((members) => new MemberData(members)))
+  );
+}
+
+async function fetchMembers(): Promise<Member[]> {
+  let seenMembers = new Set<number>();
+  let offset = 0;
+  let membersRaw: MemberRaw[] = [];
+
+  let progress = true;
+  while (progress) {
+    progress = false;
+    const url = `https://rowlog.com/api/members?limit=100&offset=${offset}`;
+
+    const data = JSON.parse(await fetch(url));
+    for (const member of data) {
+      const id = member.id;
+      if (!seenMembers.has(id)) {
+        seenMembers.add(id);
+        progress = true;
+        membersRaw.push(member);
+      }
+    }
+
+    offset += 100;
+  }
+
+  const types = await memberTypes();
+
+  return membersRaw
+    .filter((member) => member.id) // guest have ID 0
+    .map((member) => {
+      return {
+        id: member.id,
+        name: member.name.replace(/\s+/g, " ").trim(),
+        birthDate: member.birthDate
+          ? new Date(member.birthDate.split("T")[0])
+          : null,
+        address: (
+          member.address.trim() +
+          (member.address2 ? " " + member.address2.trim() : "") +
+          ", " +
+          member.postCode.trim() +
+          " " +
+          member.city
+        ).replace(/\s+/, " "),
+        email: member.emailAddress,
+        newsletter: member.newsletter,
+        phone: member.phoneNo,
+        boatAdmin: member.boatAdmin,
+        systemAdmin: member.systemAdmin,
+        permissions: member.permissionCode,
+        raw: member,
+        memberType: types.find((t) => t.id === member.memberTypeId)
+          ?.description,
+      };
+    });
+}
+
+type MemberType = {
+  id: number;
+  description: string;
+  allowRowing: boolean;
+};
+
+async function memberTypes(): Promise<MemberType[]> {
+  const url = `https://rowlog.com/api/membertypes`;
+  return JSON.parse(await fetch(url));
+}

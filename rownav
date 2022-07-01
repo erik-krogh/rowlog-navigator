@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JS_FILE="$MYDIR/dist/src/main.js"
+if [[ "--build" == "$1" ]]; then
+    pushd $MYDIR > /dev/null
+    npm run-script build
+    popd > /dev/null
+    shift
+fi
+
+if [[ ! -f "$JS_FILE" ]]; then
+    echo "Running COPU for the first time, installing and compiling."
+    pushd $MYDIR > /dev/null
+    npm install
+    npm run-script build
+    popd > /dev/null
+fi
+
+node --check "$JS_FILE" || (echo "Syntax error in main script: you probably need to use a more recent node version." 1>&2; exit 1)
+
+sourceMaps=$(node --enable-source-maps -e '' 2> /dev/null && echo "--enable-source-maps" || echo "")
+node $sourceMaps $JS_FILE "$@"

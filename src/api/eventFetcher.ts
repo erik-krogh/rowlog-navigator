@@ -1,0 +1,218 @@
+import got from "got";
+import * as cherrio from "cheerio";
+import * as api from "./api";
+import appRoot from "app-root-path";
+import * as path from "path";
+import * as fs from "fs";
+import { getConfig } from "../util/config";
+
+export type Event = {
+  eventId: number;
+  name: string;
+  description?: string;
+  creator: number;
+  route: string;
+  start: Date;
+  end: Date;
+  lastResp: Date;
+  distance?: number;
+  current: boolean;
+  participants: {
+    memberId: number;
+    comment: string;
+    signedUp: Date;
+    cancelled?: boolean;
+  }[];
+};
+
+async function fetchCurrentEvents(): Promise<Event[]> {
+  // a fresh PHPSESSID
+  const url = "https://rokort.dk/";
+  const sessionID = await got(url).then(
+    (res) => res.headers["set-cookie"][0].split(";")[0].split("=")[1]
+  );
+
+  const config = getConfig();
+
+  // login
+  const request = await got.post("https://rokort.dk/index.php", {
+    headers: {
+      Cookie: `PHPSESSID=${sessionID}`,
+    },
+    form: {
+      user_name: config.USER_NAME,
+      password: config.PASSWORD,
+      action: "login",
+      siteid: config.SITE_ID,
+      save_login: "1",
+      page: "",
+    },
+  });
+
+  if (request.body.includes("Forkert brugernavn eller kodeord")) {
+    throw new Error("Forkert brugernavn eller kodeord");
+  }
+
+  // fetch list of upcoming events
+  const html = await got("https://rokort.dk/workshop/workshop2.php", {
+    headers: {
+      Cookie: `PHPSESSID=${sessionID}`,
+    },
+  }).then((res) => res.body);
+
+  // get the onclick attribute from each "#events_scroll tr"
+  const $ = cherrio.load(html);
+  const onclick = $("#events_scroll tr")
+    .map((i, el) => {
+      return $(el).attr("onclick");
+    })
+    .get();
+
+  // "showWin('event.php?id=1017');" -> 1017
+  const eventIDs = onclick.map((el) => Number(el.split("'")[1].split("=")[1]));
+
+  const eventHTMLs = await Promise.all(
+    eventIDs.map((id) =>
+      got(`https://rokort.dk/workshop/event.php?id=${id}`, {
+        headers: {
+          Cookie: `PHPSESSID=${sessionID}`,
+        },
+      }).then((res) => [id, res.body] as [number, string])
+    )
+  );
+
+  const members = await api.members();
+
+  const events = eventHTMLs.map(([id, html]) => {
+    const $ = cherrio.load(html);
+
+    const metaData: Map<string, string> = new Map();
+    $("table.input_table tr")
+      .get()
+      .map((el) => {
+        // key -> tr > td:nth-child(0)
+        const key = $(el).children().first().text().trim();
+        // value -> tr > td:nth-child(1)
+        const value = $(el).children().first().next().text().trim();
+        metaData.set(key, value);
+      });
+
+    const participants = $("table.box_borders tr:not(:first-child)")
+      .map((i, el) => {
+        // name | comment | signed up | id
+        let [rawName, comment, signedUp] = $(el)
+          .find("td")
+          .map((i, el) => $(el).text().trim())
+          .get();
+        const name = rawName.split("(")[0].trim();
+        const memberId = members.getMemberByName(name)?.id;
+        return {
+          memberId,
+          comment,
+          signedUp: parseRowDate(signedUp),
+        };
+      })
+      .get();
+
+    const event: Event = {
+      eventId: id,
+      name: $("h1").text().trim(),
+      description: $("h1 + div")
+        .html()
+        ?.replace(/\n/g, "")
+        .replace(/<br>/g, "\n"),
+      creator: members.getMemberByName(metaData.get("Kontaktperson"))?.id,
+      route: metaData.get("Rute"),
+      start: parseRowDate(metaData.get("Start")),
+      end: parseRowDate(metaData.get("Slut")),
+      lastResp: parseRowDate(metaData.get("Sidste tilmelding")),
+      distance: metaData.get("Kilometer")
+        ? Number(metaData.get("Kilometer"))
+        : undefined,
+      participants,
+      current: true,
+    };
+    return event;
+  });
+
+  return events;
+}
+
+function parseRowDate(raw: string): Date {
+  // 26-07-2022 15:00 -> 2022-07-26T15:00:00.000Z
+  const [date, time] = raw.split(" ");
+  const [day, month, year] = date.split("-");
+  const [hour, minute] = time.split(":");
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    0,
+    0
+  );
+}
+
+const cacheFolder = path.join(appRoot.path, "work-cache", "events");
+let eventPromise: null | Promise<Event[]> = null;
+export async function events(): Promise<Event[]> {
+  if (eventPromise) {
+    return eventPromise;
+  }
+
+  return (eventPromise = new Promise((resolve, reject) => {
+    saveCurrentEvents()
+      .then((currentEventsIds) => {
+        try {
+          const res: Event[] = [];
+          for (const file of fs.readdirSync(cacheFolder)) {
+            const event = JSON.parse(
+              fs.readFileSync(path.join(cacheFolder, file), "utf8")
+            );
+            event.current = currentEventsIds.has(event.eventId);
+            res.push(event);
+          }
+
+          resolve(res);
+        } catch (e) {
+          reject(e);
+        }
+      })
+      .catch(reject);
+  }));
+}
+
+export async function saveCurrentEvents() {
+  const currentEvents = await fetchCurrentEvents();
+
+  fs.mkdirSync(cacheFolder, { recursive: true });
+
+  saveEvents(currentEvents, cacheFolder);
+
+  const currentEventsIds = new Set(currentEvents.map((c) => c.eventId));
+  return currentEventsIds;
+}
+
+function saveEvents(events: Event[], folder: string) {
+  for (const event of events) {
+    const file = path.join(folder, `${event.eventId}.json`);
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, JSON.stringify(event, null, 2));
+      return;
+    }
+    // find old participants not in the new, add them and mark them as cancelled
+    const newParticipantIds = new Set(
+      event.participants.map((p) => p.memberId)
+    );
+    for (const oldParticipant of JSON.parse(fs.readFileSync(file, "utf8"))
+      .participants) {
+      if (!newParticipantIds.has(oldParticipant.memberId)) {
+        oldParticipant.cancelled = true;
+        event.participants.push(oldParticipant);
+      }
+    }
+  }
+}
+
+// TODO: Global cache on a server.

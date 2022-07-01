@@ -1,0 +1,7 @@
+*.yml
+*.md
+*.json
+qlpacks/
+test/sources/
+dist/
+work/
