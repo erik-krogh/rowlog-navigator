@@ -27,7 +27,7 @@ export type Event = {
 
 async function fetchCurrentEvents(): Promise<Event[]> {
   // a fresh PHPSESSID
-  const url = "http://rokort.dk/";
+  const url = "https://rokort.dk/";
   const sessionID = await got(url).then(
     (res) => res.headers["set-cookie"][0].split(";")[0].split("=")[1]
   );
@@ -35,7 +35,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
   const config = getConfig();
 
   // login
-  const request = await got.post("http://rokort.dk/index.php", {
+  const request = await got.post("https://rokort.dk/index.php", {
     headers: {
       Cookie: `PHPSESSID=${sessionID}`,
     },
@@ -54,7 +54,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
   }
 
   // fetch list of upcoming events
-  const html = await got("http://rokort.dk/workshop/workshop2.php", {
+  const html = await got("https://rokort.dk/workshop/workshop2.php", {
     headers: {
       Cookie: `PHPSESSID=${sessionID}`,
     },
@@ -73,7 +73,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
 
   const eventHTMLs = await Promise.all(
     eventIDs.map((id) =>
-      got(`http://rokort.dk/workshop/event.php?id=${id}`, {
+      got(`https://rokort.dk/workshop/event.php?id=${id}`, {
         headers: {
           Cookie: `PHPSESSID=${sessionID}`,
         },
