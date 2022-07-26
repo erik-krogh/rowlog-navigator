@@ -25,6 +25,7 @@ export type Event = {
 };
 
 async function fetchCurrentEvents(): Promise<Event[]> {
+  console.log("Getting session id...");
   // a fresh PHPSESSID
   const url = "http://rokort.dk/";
   const sessionID = await got(url).then(
@@ -32,6 +33,8 @@ async function fetchCurrentEvents(): Promise<Event[]> {
   );
 
   const config = getConfig();
+
+  console.log("Login...");
 
   // login
   const request = await got.post("http://rokort.dk/index.php", {
@@ -51,6 +54,8 @@ async function fetchCurrentEvents(): Promise<Event[]> {
   if (request.body.includes("Forkert brugernavn eller kodeord")) {
     throw new Error("Forkert brugernavn eller kodeord");
   }
+
+  console.log("Getting events...");
 
   // fetch list of upcoming events
   const html = await got("http://rokort.dk/workshop/workshop2.php", {
