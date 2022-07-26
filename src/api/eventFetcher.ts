@@ -26,7 +26,7 @@ export type Event = {
 
 async function fetchCurrentEvents(): Promise<Event[]> {
   // a fresh PHPSESSID
-  const url = "://rokort.dk/";
+  const url = "http://rokort.dk/";
   const sessionID = await got(url).then(
     (res) => res.headers["set-cookie"][0].split(";")[0].split("=")[1]
   );
