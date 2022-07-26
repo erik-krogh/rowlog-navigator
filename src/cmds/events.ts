@@ -41,7 +41,7 @@ async function search() {
         name: e.eventId + "",
         message: e.name,
         hint:
-          members.getMember(e.creator).name +
+        e.creator +
           " | " +
           e.route +
           " | " +
@@ -52,15 +52,15 @@ async function search() {
   );
   const event = events.find((e) => e.eventId === +eventSelection);
   console.log(colors.bold(event.name));
-  console.log("Lavet af " + members.getMember(event.creator).name);
+  console.log("Lavet af " + event.creator);
   console.log(event.description);
   console.log("");
   console.log("Deltagere:");
   event.participants.forEach((p) => {
     console.log(
-      members.getMember(p.memberId).name +
+      p.memberName +
         " (" +
-        p.memberId +
+        members.getMemberByName(p.memberName).id +
         ") | " +
         p.comment +
         (p.cancelled ? " | Afmeldt!" : "")
@@ -71,14 +71,14 @@ async function search() {
 async function mostCreated() {
   const events = await eventFetcher.events();
   const members = await api.members();
-  const createCount: Map<number, number> = new Map(); // memberId -> count
+  const createCount: Map<string, number> = new Map(); // memberName -> count
   for (const event of events) {
     createCount.set(event.creator, (createCount.get(event.creator) || 0) + 1);
   }
   const sorted = Array.from(createCount.entries()).sort((a, b) => b[1] - a[1]);
-  sorted.forEach(([id, count]) => {
+  sorted.forEach(([name, count]) => {
     console.log(
-      members.getMember(id).name + " (" + id + ") | " + count + " aktiviteter"
+      name + " (" + members.getMemberByName(name).id + ") | " + count + " aktiviteter"
     );
   });
 }
@@ -86,21 +86,21 @@ async function mostCreated() {
 async function mostParticipated() {
   const events = await eventFetcher.events();
   const members = await api.members();
-  const participantCount: Map<number, number> = new Map(); // memberId -> count
+  const participantCount: Map<string, number> = new Map(); // memberName -> count
   for (const event of events) {
     event.participants.forEach((p) => {
       participantCount.set(
-        p.memberId,
-        (participantCount.get(p.memberId) || 0) + 1
+        p.memberName,
+        (participantCount.get(p.memberName) || 0) + 1
       );
     });
   }
   const sorted = Array.from(participantCount.entries()).sort(
     (a, b) => b[1] - a[1]
   );
-  sorted.forEach(([id, count]) => {
+  sorted.forEach(([name, count]) => {
     console.log(
-      members.getMember(id).name + " (" + id + ") | " + count + " aktiviteter"
+      name + " (" + members.getMemberByName(name).id + ") | " + count + " aktiviteter"
     );
   });
 }

@@ -1,6 +1,5 @@
 import got from "got";
 import * as cherrio from "cheerio";
-import * as api from "./api";
 import appRoot from "app-root-path";
 import * as path from "path";
 import * as fs from "fs";
@@ -10,7 +9,7 @@ export type Event = {
   eventId: number;
   name: string;
   description?: string;
-  creator: number;
+  creator: string; // the name of the creator
   route: string;
   start: Date;
   end: Date;
@@ -18,7 +17,7 @@ export type Event = {
   distance?: number;
   current: boolean;
   participants: {
-    memberId: number;
+    memberName: string;
     comment: string;
     signedUp: Date;
     cancelled?: boolean;
@@ -27,7 +26,7 @@ export type Event = {
 
 async function fetchCurrentEvents(): Promise<Event[]> {
   // a fresh PHPSESSID
-  const url = "https://rokort.dk/";
+  const url = "://rokort.dk/";
   const sessionID = await got(url).then(
     (res) => res.headers["set-cookie"][0].split(";")[0].split("=")[1]
   );
@@ -35,7 +34,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
   const config = getConfig();
 
   // login
-  const request = await got.post("https://rokort.dk/index.php", {
+  const request = await got.post("http://rokort.dk/index.php", {
     headers: {
       Cookie: `PHPSESSID=${sessionID}`,
     },
@@ -54,7 +53,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
   }
 
   // fetch list of upcoming events
-  const html = await got("https://rokort.dk/workshop/workshop2.php", {
+  const html = await got("http://rokort.dk/workshop/workshop2.php", {
     headers: {
       Cookie: `PHPSESSID=${sessionID}`,
     },
@@ -73,15 +72,13 @@ async function fetchCurrentEvents(): Promise<Event[]> {
 
   const eventHTMLs = await Promise.all(
     eventIDs.map((id) =>
-      got(`https://rokort.dk/workshop/event.php?id=${id}`, {
+      got(`http://rokort.dk/workshop/event.php?id=${id}`, {
         headers: {
           Cookie: `PHPSESSID=${sessionID}`,
         },
       }).then((res) => [id, res.body] as [number, string])
     )
   );
-
-  const members = await api.members();
 
   const events = eventHTMLs.map(([id, html]) => {
     const $ = cherrio.load(html);
@@ -105,9 +102,8 @@ async function fetchCurrentEvents(): Promise<Event[]> {
           .map((i, el) => $(el).text().trim())
           .get();
         const name = rawName.split("(")[0].trim();
-        const memberId = members.getMemberByName(name)?.id;
         return {
-          memberId,
+          memberName: name,
           comment,
           signedUp: parseRowDate(signedUp),
         };
@@ -121,7 +117,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
         .html()
         ?.replace(/\n/g, "")
         .replace(/<br>/g, "\n"),
-      creator: members.getMemberByName(metaData.get("Kontaktperson"))?.id,
+      creator: metaData.get("Kontaktperson"),
       route: metaData.get("Rute"),
       start: parseRowDate(metaData.get("Start")),
       end: parseRowDate(metaData.get("Slut")),
@@ -202,17 +198,15 @@ function saveEvents(events: Event[], folder: string) {
       return;
     }
     // find old participants not in the new, add them and mark them as cancelled
-    const newParticipantIds = new Set(
-      event.participants.map((p) => p.memberId)
+    const newParticipantNames = new Set(
+      event.participants.map((p) => p.memberName)
     );
     for (const oldParticipant of JSON.parse(fs.readFileSync(file, "utf8"))
       .participants) {
-      if (!newParticipantIds.has(oldParticipant.memberId)) {
+      if (!newParticipantNames.has(oldParticipant.memberName)) {
         oldParticipant.cancelled = true;
         event.participants.push(oldParticipant);
       }
     }
   }
 }
-
-// TODO: Global cache on a server.
