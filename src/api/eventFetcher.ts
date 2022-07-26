@@ -69,6 +69,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
 
   // "showWin('event.php?id=1017');" -> 1017
   const eventIDs = onclick.map((el) => Number(el.split("'")[1].split("=")[1]));
+  console.log("EventIDs:", eventIDs);
 
   const eventHTMLs = await Promise.all(
     eventIDs.map((id) =>
@@ -79,6 +80,8 @@ async function fetchCurrentEvents(): Promise<Event[]> {
       }).then((res) => [id, res.body] as [number, string])
     )
   );
+
+  console.log("Fetched events");
 
   const events = eventHTMLs.map(([id, html]) => {
     const $ = cherrio.load(html);
