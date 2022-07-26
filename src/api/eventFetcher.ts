@@ -4,6 +4,7 @@ import appRoot from "app-root-path";
 import * as path from "path";
 import * as fs from "fs";
 import { getConfig } from "../util/config";
+import { cache } from "../util/rowerutils";
 
 export type Event = {
   eventId: number;
@@ -159,13 +160,9 @@ function parseRowDate(raw: string): Date {
 }
 
 const cacheFolder = path.join(appRoot.path, "work-cache", "events");
-let eventPromise: null | Promise<Event[]> = null;
-export async function events(): Promise<Event[]> {
-  if (eventPromise) {
-    return eventPromise;
-  }
-
-  return (eventPromise = new Promise((resolve, reject) => {
+// cached for an hour.
+export const events = cache<Promise<Event[]>>(() => {
+  return new Promise((resolve, reject) => {
     saveCurrentEvents()
       .then((currentEventsIds) => {
         try {
@@ -184,11 +181,13 @@ export async function events(): Promise<Event[]> {
         }
       })
       .catch(reject);
-  }));
-}
+  });
+}, 60 * 60);
 
 export async function saveCurrentEvents() {
   const currentEvents = await fetchCurrentEvents();
+
+  console.log("Got events: " + currentEvents.map(e => e.eventId).join(", "));
 
   fs.mkdirSync(cacheFolder, { recursive: true });
 
