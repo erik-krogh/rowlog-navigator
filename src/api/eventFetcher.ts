@@ -187,7 +187,7 @@ export const events = cache<Promise<Event[]>>(() => {
 export async function saveCurrentEvents() {
   const currentEvents = await fetchCurrentEvents();
 
-  console.log("Got events: " + currentEvents.map(e => e.eventId).join(", "));
+  console.log("Got events: " + currentEvents.map((e) => e.eventId).join(", "));
 
   fs.mkdirSync(cacheFolder, { recursive: true });
 
@@ -200,20 +200,20 @@ export async function saveCurrentEvents() {
 function saveEvents(events: Event[], folder: string) {
   for (const event of events) {
     const file = path.join(folder, `${event.eventId}.json`);
-    if (!fs.existsSync(file)) {
-      fs.writeFileSync(file, JSON.stringify(event, null, 2));
-      return;
-    }
-    // find old participants not in the new, add them and mark them as cancelled
-    const newParticipantNames = new Set(
-      event.participants.map((p) => p.memberName)
-    );
-    for (const oldParticipant of JSON.parse(fs.readFileSync(file, "utf8"))
-      .participants) {
-      if (!newParticipantNames.has(oldParticipant.memberName)) {
-        oldParticipant.cancelled = true;
-        event.participants.push(oldParticipant);
+    if (fs.existsSync(file)) {
+      // find old participants not in the new, add them and mark them as cancelled
+      const newParticipantNames = new Set(
+        event.participants.map((p) => p.memberName)
+      );
+      for (const oldParticipant of JSON.parse(fs.readFileSync(file, "utf8"))
+        .participants) {
+        if (!newParticipantNames.has(oldParticipant.memberName)) {
+          oldParticipant.cancelled = true;
+          event.participants.push(oldParticipant);
+        }
       }
     }
+
+    fs.writeFileSync(file, JSON.stringify(event, null, 2));
   }
 }
