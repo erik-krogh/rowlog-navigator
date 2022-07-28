@@ -10,7 +10,7 @@ setInterval(() => {
 
 // start the server
 const app = express();
-app.get("/", async (req, res) => {
+app.get("/events", async (req, res) => {
   const events = await eventFetcher.events();
   res.status(200).json(events);
 });

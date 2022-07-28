@@ -26,7 +26,6 @@ export type Event = {
 };
 
 async function fetchCurrentEvents(): Promise<Event[]> {
-  console.log("Getting session id...");
   // a fresh PHPSESSID
   const url = "http://rokort.dk/";
   const sessionID = await got(url).then(
@@ -34,8 +33,6 @@ async function fetchCurrentEvents(): Promise<Event[]> {
   );
 
   const config = getConfig();
-
-  console.log("Login...");
 
   // login
   const request = await got.post("http://rokort.dk/index.php", {
@@ -56,8 +53,6 @@ async function fetchCurrentEvents(): Promise<Event[]> {
     throw new Error("Forkert brugernavn eller kodeord");
   }
 
-  console.log("Getting events...");
-
   // fetch list of upcoming events
   const html = await got("http://rokort.dk/workshop/workshop2.php", {
     headers: {
@@ -75,7 +70,6 @@ async function fetchCurrentEvents(): Promise<Event[]> {
 
   // "showWin('event.php?id=1017');" -> 1017
   const eventIDs = onclick.map((el) => Number(el.split("'")[1].split("=")[1]));
-  console.log("EventIDs:", eventIDs);
 
   const eventHTMLs = await Promise.all(
     eventIDs.map((id) =>
@@ -86,8 +80,6 @@ async function fetchCurrentEvents(): Promise<Event[]> {
       }).then((res) => [id, res.body] as [number, string])
     )
   );
-
-  console.log("Fetched events");
 
   const events = eventHTMLs.map(([id, html]) => {
     const $ = cherrio.load(html);
@@ -186,8 +178,6 @@ export const events = cache<Promise<Event[]>>(() => {
 
 export async function saveCurrentEvents() {
   const currentEvents = await fetchCurrentEvents();
-
-  console.log("Got events: " + currentEvents.map((e) => e.eventId).join(", "));
 
   fs.mkdirSync(cacheFolder, { recursive: true });
 
