@@ -32,7 +32,9 @@ export async function run() {
 }
 
 async function search() {
-  const events = await eventFetcher.events();
+  const events = (await eventFetcher.events()).sort(
+    (a, b) => a.start.getTime() - b.start.getTime()
+  );
   const members = await api.members();
   const eventSelection = await prompt.ask(
     "Select event",
@@ -41,7 +43,7 @@ async function search() {
         name: e.eventId + "",
         message: e.name,
         hint:
-        e.creator +
+          e.creator +
           " | " +
           e.route +
           " | " +
@@ -78,7 +80,12 @@ async function mostCreated() {
   const sorted = Array.from(createCount.entries()).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([name, count]) => {
     console.log(
-      name + " (" + members.getMemberByName(name).id + ") | " + count + " aktiviteter"
+      name +
+        " (" +
+        members.getMemberByName(name).id +
+        ") | " +
+        count +
+        " aktiviteter"
     );
   });
 }
@@ -100,7 +107,12 @@ async function mostParticipated() {
   );
   sorted.forEach(([name, count]) => {
     console.log(
-      name + " (" + members.getMemberByName(name).id + ") | " + count + " aktiviteter"
+      name +
+        " (" +
+        members.getMemberByName(name).id +
+        ") | " +
+        count +
+        " aktiviteter"
     );
   });
 }

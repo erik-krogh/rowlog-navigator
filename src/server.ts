@@ -11,6 +11,7 @@ setInterval(() => {
 // start the server
 const app = express();
 app.get("/events", async (req, res) => {
+  console.log("Fetching events...");
   const events = await eventFetcher.events();
   res.status(200).json(events);
 });
