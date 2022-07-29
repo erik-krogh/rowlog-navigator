@@ -2,7 +2,7 @@ import * as https from "https";
 import Cache from "../util/localcache";
 import { getConfig } from "../util/config";
 
-function auth() {
+export function auth() {
   const config = getConfig();
   return Buffer.from(`${config.USER_NAME}:${config.PASSWORD}`).toString(
     "base64"

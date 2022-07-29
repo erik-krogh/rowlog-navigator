@@ -5,6 +5,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { cache } from "../util/rowerutils";
 import { getConfig } from "../util/config";
+import { auth } from "./api";
 
 export type Event = {
   eventId: number;
@@ -158,7 +159,9 @@ export const events = cache<Promise<Event[]>>(async () => {
 
   // If the server is configured, then try to use it.
   if (config.ROW_NAV_SERVER) {
-    const resp = await got.get(config.ROW_NAV_SERVER + "/events");
+    const resp = await got.get(config.ROW_NAV_SERVER + "/events", {
+      headers: { Authorization: "Basic " + auth() },
+    });
 
     // and get the local cache up to date anyway
     void saveCurrentEvents();
