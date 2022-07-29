@@ -20,18 +20,18 @@ export async function run(): Promise<void> {
   void eventFetcher.events(); // populating events cache.
   void api.members(); // populating members cache.
 
-  let category = await prompt.ask("Hvad vil se?", [
-    {
-      name: "boat",
-      message: "Båd statestik",
-    },
+  let category = await prompt.ask("Hvad vil du se?", [
     {
       name: "member-stats",
       message: "Roer statestik",
     },
     {
+      name: "boat",
+      message: "Båd statestik",
+    },
+    {
       name: "members",
-      message: "Søge i medlemsdatabasen",
+      message: "Medlemsdatabasen",
     },
     {
       name: "events",
@@ -54,3 +54,7 @@ export async function run(): Promise<void> {
 }
 
 void run();
+
+// TODO: Make sure the server always has populated caches.
+// make current events bold in search
+// change sorting of events.

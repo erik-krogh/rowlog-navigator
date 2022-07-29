@@ -1,6 +1,8 @@
 import * as https from "https";
 import Cache from "../util/localcache";
 import { getConfig } from "../util/config";
+import * as util from "../util/rowerutils";
+import got from "got";
 
 export function auth() {
   const config = getConfig();
@@ -94,24 +96,29 @@ export class TripData {
   }
 }
 
-let tripPromise: null | Promise<TripData> = null;
-export function trips(): Promise<TripData> {
-  if (tripPromise) {
-    return tripPromise;
+export const trips: () => Promise<TripData> = util.cache(async () => {
+  const config = getConfig();
+  if (config.ROW_NAV_SERVER) {
+    const resp = await got.get(config.ROW_NAV_SERVER + "/trips", {
+      headers: {
+        Authorization: `Basic ${auth()}`,
+      },
+    });
+
+    return new TripData(JSON.parse(resp.body));
   }
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
-  return (tripPromise = fetchTrips(
-    "2021-11-01",
-    yesterday.toISOString().substring(0, 10)
-  ));
-}
+  return new TripData(
+    await fetchTrips("2021-11-01", yesterday.toISOString().substring(0, 10)) // TODO: Not hardcoded.
+  );
+}, 60 * 60);
 
 async function fetchTrips(
   startDateRaw: string,
   endDateRaw: string
-): Promise<TripData> {
+): Promise<Trip[]> {
   const fetcher = new Cache("fetchTrips", (date) => {
     const prevDate = new Date(date);
     prevDate.setDate(prevDate.getDate() - 1);
@@ -170,7 +177,7 @@ async function fetchTrips(
       };
     });
 
-  return new TripData(trips);
+  return trips;
 }
 
 /** fetches the 100 most recent trips within the date range. */
@@ -312,13 +319,26 @@ export class MemberData {
   }
 }
 
-let memberPromise: null | Promise<MemberData> = null;
-export function members(): Promise<MemberData> {
-  return (
-    memberPromise ||
-    (memberPromise = fetchMembers().then((members) => new MemberData(members)))
-  );
-}
+export const members: () => Promise<MemberData> = util.cache(async () => {
+  const config = getConfig();
+  if (config.ROW_NAV_SERVER) {
+    const resp = await got.get(config.ROW_NAV_SERVER + "/members", {
+      headers: {
+        Authorization: `Basic ${auth()}`,
+      },
+    });
+    const members: Member[] = JSON.parse(resp.body);
+    // make dates into dates
+    for (const member of members) {
+      if (member.birthDate) {
+        member.birthDate = new Date(member.birthDate);
+      }
+    }
+
+    return new MemberData(members);
+  }
+  return new MemberData(await fetchMembers());
+}, 60 * 60);
 
 async function fetchMembers(): Promise<Member[]> {
   let seenMembers = new Set<number>();

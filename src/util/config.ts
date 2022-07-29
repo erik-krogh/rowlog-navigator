@@ -7,7 +7,7 @@ enum CONFIG_ENUM {
   USER_NAME = "username",
   PASSWORD = "password",
   SITE_ID = "rowclub ID", // ASR = 159
-  ROW_NAV_SERVER = "url to external server saving and caching"
+  ROW_NAV_SERVER = "url to external server saving and caching",
 }
 
 export type KEY_TYPE = keyof typeof CONFIG_ENUM;
