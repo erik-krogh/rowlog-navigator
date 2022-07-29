@@ -17,6 +17,8 @@ export async function run(): Promise<void> {
 
   void api.trips(); // async fetching to speed up first request.
   void eventFetcher.saveCurrentEvents(); // saving current events, so we don't miss when they are deleted.
+  void eventFetcher.events(); // populating events cache.
+  void api.members(); // populating members cache.
 
   let category = await prompt.ask("Hvad vil se?", [
     {

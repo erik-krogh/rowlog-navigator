@@ -153,54 +153,41 @@ function parseRowDate(raw: string): Date {
 
 const cacheFolder = path.join(appRoot.path, "work-cache", "events");
 // cached for an hour.
-export const events = cache<Promise<Event[]>>(() => {
-  return new Promise((resolve, reject) => {
-    const config = getConfig();
+export const events = cache<Promise<Event[]>>(async () => {
+  const config = getConfig();
 
-    // If the server is configured, then try to use it.
-    if (config.ROW_NAV_SERVER) {
-      got
-        .get(config.ROW_NAV_SERVER + "/events")
-        .then((resp) => {
-          const events: Event[] = JSON.parse(resp.body);
-          // dates are stringified in JSON, so we need to parse them.
-          for (const event of events) {
-            event.start = new Date(event.start);
-            event.end = new Date(event.end);
-            event.lastResp = new Date(event.lastResp);
-            event.participants.forEach((p) => {
-              p.signedUp = new Date(p.signedUp);
-            });
-          }
-          resolve(events);
-        })
-        .catch(reject);
+  // If the server is configured, then try to use it.
+  if (config.ROW_NAV_SERVER) {
+    const resp = await got.get(config.ROW_NAV_SERVER + "/events");
 
-      // and get the local cache up to date anyway
-      void saveCurrentEvents();
-      return;
+    // and get the local cache up to date anyway
+    void saveCurrentEvents();
+
+    const events: Event[] = JSON.parse(resp.body);
+    // dates are stringified in JSON, so we need to parse them.
+    for (const event of events) {
+      event.start = new Date(event.start);
+      event.end = new Date(event.end);
+      event.lastResp = new Date(event.lastResp);
+      event.participants.forEach((p) => {
+        p.signedUp = new Date(p.signedUp);
+      });
     }
+    return events;
+  }
 
-    // else, do it locally.
-    saveCurrentEvents()
-      .then((currentEventsIds) => {
-        try {
-          const res: Event[] = [];
-          for (const file of fs.readdirSync(cacheFolder)) {
-            const event = JSON.parse(
-              fs.readFileSync(path.join(cacheFolder, file), "utf8")
-            );
-            event.current = currentEventsIds.has(event.eventId);
-            res.push(event);
-          }
+  // else, do it locally.
+  const currentEventsIds = await saveCurrentEvents();
+  const res: Event[] = [];
+  for (const file of fs.readdirSync(cacheFolder)) {
+    const event = JSON.parse(
+      fs.readFileSync(path.join(cacheFolder, file), "utf8")
+    );
+    event.current = currentEventsIds.has(event.eventId);
+    res.push(event);
+  }
 
-          resolve(res);
-        } catch (e) {
-          reject(e);
-        }
-      })
-      .catch(reject);
-  });
+  return res;
 }, 60 * 60);
 
 export async function saveCurrentEvents() {
