@@ -55,6 +55,4 @@ export async function run(): Promise<void> {
 
 void run();
 
-// TODO: Make sure the server always has populated caches.
-// make current events bold in search
-// change sorting of events.
+// TODO: Make sure the UI never stops.

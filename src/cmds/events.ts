@@ -32,16 +32,19 @@ export async function run() {
 }
 
 async function search() {
-  const events = (await eventFetcher.events()).sort(
-    (a, b) => a.start.getTime() - b.start.getTime()
-  );
+  const events = (await eventFetcher.events()).sort((a, b) => {
+    if (a.current != b.current) {
+      return a.current ? -1 : 1;
+    }
+    return a.start.getTime() - b.start.getTime();
+  });
   const members = await api.members();
   const eventSelection = await prompt.ask(
     "Select event",
     events.map((e) => {
       return {
         name: e.eventId + "",
-        message: e.name,
+        message: e.current ? colors.bold(e.name) : e.name,
         hint:
           e.creator +
           " | " +

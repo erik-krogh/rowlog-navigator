@@ -19,7 +19,7 @@ app.use(async (req, res, next) => {
   }
   const authHeader = req.headers.authorization;
   if (authHeader.toLowerCase() !== ("Basic " + api.auth()).toLowerCase()) {
-    res.status(401).end();
+    res.status(401).send("Unauthorized");
     return next(new Error("Not authorized! Go back!"));
   } else {
     return next();
