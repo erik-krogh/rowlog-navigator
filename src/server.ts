@@ -14,6 +14,10 @@ setInterval(() => {
 const app = express();
 
 app.use(async (req, res, next) => {
+  if (!req.headers || !req.headers.authorization) {
+    res.status(401).send("Unauthorized");
+    return;
+  }
   const authHeader = req.headers.authorization;
   if (authHeader.toLowerCase() !== ("Basic " + api.auth()).toLowerCase()) {
     res.status(401).end();
