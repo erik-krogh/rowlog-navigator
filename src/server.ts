@@ -33,18 +33,6 @@ app.get("/events", async (req, res) => {
   res.status(200).json(events);
 });
 
-app.get("/members", async (req, res) => {
-  console.log("Fetching members...");
-  const members = (await api.members()).getAllMembers();
-  res.status(200).json(members);
-});
-
-app.get("/trips", async (req, res) => {
-  console.log("Fetching trips...");
-  const trips = (await api.trips()).getTrips();
-  res.status(200).json(trips);
-});
-
 // start the server
 const port = process.env.PORT || 9001;
 app.listen(port, () => {

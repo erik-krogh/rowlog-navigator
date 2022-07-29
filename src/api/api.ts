@@ -97,16 +97,6 @@ export class TripData {
 }
 
 export const trips: () => Promise<TripData> = util.cache(async () => {
-  const config = getConfig();
-  if (config.ROW_NAV_SERVER) {
-    const resp = await got.get(config.ROW_NAV_SERVER + "/trips", {
-      headers: {
-        Authorization: `Basic ${auth()}`,
-      },
-    });
-
-    return new TripData(JSON.parse(resp.body));
-  }
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
@@ -320,23 +310,6 @@ export class MemberData {
 }
 
 export const members: () => Promise<MemberData> = util.cache(async () => {
-  const config = getConfig();
-  if (config.ROW_NAV_SERVER) {
-    const resp = await got.get(config.ROW_NAV_SERVER + "/members", {
-      headers: {
-        Authorization: `Basic ${auth()}`,
-      },
-    });
-    const members: Member[] = JSON.parse(resp.body);
-    // make dates into dates
-    for (const member of members) {
-      if (member.birthDate) {
-        member.birthDate = new Date(member.birthDate);
-      }
-    }
-
-    return new MemberData(members);
-  }
   return new MemberData(await fetchMembers());
 }, 60 * 60);
 
