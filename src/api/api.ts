@@ -2,7 +2,6 @@ import * as https from "https";
 import Cache from "../util/localcache";
 import { getConfig } from "../util/config";
 import * as util from "../util/rowerutils";
-import got from "got";
 
 export function auth() {
   const config = getConfig();
@@ -112,7 +111,7 @@ async function fetchTrips(
   const fetcher = new Cache("fetchTrips", (date) => {
     const prevDate = new Date(date);
     prevDate.setDate(prevDate.getDate() - 1);
-    return fetchTripsRaw(prevDate.toISOString().substring(0, 10), date, auth());
+    return fetchTripsRaw(prevDate.toISOString().substring(0, 10), date);
   });
 
   const seenTripIds = new Set<number>();
@@ -171,11 +170,7 @@ async function fetchTrips(
 }
 
 /** fetches the 100 most recent trips within the date range. */
-function fetchTripsRaw(
-  startDate: string,
-  endDate: string,
-  auth: string
-): Promise<string> {
+function fetchTripsRaw(startDate: string, endDate: string): Promise<string> {
   const url = `https://rowlog.com/api/trips?to=${endDate}&from=${startDate}`;
 
   return fetch(url);

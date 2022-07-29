@@ -26,10 +26,16 @@ app.use(async (req, res, next) => {
   }
 });
 
-app.get("/events", async (req, res) => {
+app.get("/events", (req, res) => {
   console.log("Fetching events...");
-  const events = await eventFetcher.events();
-  res.status(200).json(events);
+  eventFetcher
+    .events()
+    .then((events) => {
+      res.status(200).json(events);
+    })
+    .catch((e) => {
+      res.status(500).send(e.message);
+    });
 });
 
 // start the server

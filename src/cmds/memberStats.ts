@@ -2,7 +2,7 @@ import * as prompt from "../prompt";
 import * as api from "../api/api";
 import { promptRower } from "../util/rowerutils";
 
-export async function run() {
+export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvilken statestik?", [
     {
       name: "partners",
@@ -16,21 +16,27 @@ export async function run() {
       name: "community",
       message: "Hvem har roet flest andre roere?",
     },
+    {
+      name: "back",
+      message: "Tilbage",
+    },
   ]);
 
-  if (answer === "partners") {
-    await partners(await api.trips());
-  } else if (answer === "most-common") {
-    await mostCommon(await api.trips());
-  } else if (answer === "community") {
-    await community(await api.trips());
-    return;
-  } else {
-    throw new Error("Unknown answer");
+  switch (answer) {
+    case "partners":
+      return await partners(await api.trips());
+    case "most-common":
+      return await mostCommon(await api.trips());
+    case "community":
+      return await community(await api.trips());
+    case "back":
+      return await (await import("../main")).mainPrompt();
+    default:
+      throw new Error("Unknown answer");
   }
 }
 
-async function community(data: api.TripData) {
+async function community(data: api.TripData): Promise<void> {
   const rowers = new Map<number, Set<number>>(); // rower -> set of rowers
 
   data.getTrips().forEach((trip) => {
@@ -60,9 +66,11 @@ async function community(data: api.TripData) {
       } andre roere`
     );
   });
+
+  return await run();
 }
 
-async function mostCommon(data: api.TripData) {
+async function mostCommon(data: api.TripData): Promise<void> {
   const partners = new Map<string, number>(); // rower1|rower2 -> shared distance
   for (const trip of data.getTrips()) {
     for (let i = 0; i < trip.participants.length; i++) {
@@ -96,9 +104,11 @@ async function mostCommon(data: api.TripData) {
       `${rower1Details.rowerName} (${rower1}) og ${rower2Details.rowerName} (${rower2}) har roet ${distance} km`
     );
   });
+
+  return await run();
 }
 
-async function partners(data: api.TripData) {
+async function partners(data: api.TripData): Promise<void> {
   const rower = await promptRower(data);
 
   const partners = new Map<number, number>(); // rowserId -> shared distance
@@ -129,4 +139,6 @@ async function partners(data: api.TripData) {
         " km"
     );
   });
+
+  return await run();
 }

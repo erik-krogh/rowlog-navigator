@@ -2,7 +2,7 @@ import * as prompt from "../prompt";
 import * as api from "../api/api";
 import { promptRower } from "../util/rowerutils";
 
-export async function run() {
+export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvilen båd statestik?", [
     {
       name: "boat-individual",
@@ -16,17 +16,23 @@ export async function run() {
       name: "boat-partner",
       message: "Givet en båd, hvem har roet den mest?",
     },
+    {
+      name: "back",
+      message: "Tilbage",
+    },
   ]);
-  if (answer === "boat-individual") {
-    await boatIndividual(await api.trips());
-  } else if (answer === "boat-global") {
-    await boatGlobal(await api.trips());
-  } else if (answer === "boat-partner") {
-    await boatPartner(await api.trips());
-  } else {
-    throw new Error("Unknown answer");
+  switch (answer) {
+    case "boat-individual":
+      return await boatIndividual(await api.trips());
+    case "boat-global":
+      return await boatGlobal(await api.trips());
+    case "boat-partner":
+      return await boatPartner(await api.trips());
+    case "back":
+      return await (await import("../main")).mainPrompt();
+    default:
+      throw new Error("Unknown answer");
   }
-  return;
 }
 
 async function boatPartner(data: api.TripData) {
@@ -63,6 +69,8 @@ async function boatPartner(data: api.TripData) {
     const rowerDetails = data.getRowerDetails(id);
     console.log(`${rowerDetails.rowerName} (${id}) has rowed ${distance} km`);
   });
+
+  return await run();
 }
 
 async function boatGlobal(data: api.TripData) {
@@ -76,6 +84,8 @@ async function boatGlobal(data: api.TripData) {
   sorted.forEach(([id, distance]) => {
     console.log(data.getBoatName(id) + " (" + id + ") | " + +distance + " km");
   });
+
+  return await run();
 }
 
 async function boatIndividual(data: api.TripData) {
@@ -91,4 +101,6 @@ async function boatIndividual(data: api.TripData) {
   sorted.forEach(([id, distance]) => {
     console.log(`Har roet ${data.getBoatName(id)} (${id}) ${distance} km`);
   });
+
+  return await run();
 }

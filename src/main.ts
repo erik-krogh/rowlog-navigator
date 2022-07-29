@@ -20,6 +20,12 @@ export async function run(): Promise<void> {
   void eventFetcher.events(); // populating events cache.
   void api.members(); // populating members cache.
 
+  return await mainPrompt();
+}
+
+void run();
+
+export async function mainPrompt() {
   let category = await prompt.ask("Hvad vil du se?", [
     {
       name: "member-stats",
@@ -37,6 +43,10 @@ export async function run(): Promise<void> {
       name: "events",
       message: "Aktiviteter",
     },
+    {
+      name: "quit",
+      message: "Afslut",
+    },
   ]);
 
   switch (category) {
@@ -48,11 +58,9 @@ export async function run(): Promise<void> {
       return await (await import("./cmds/members")).run();
     case "events":
       return await (await import("./cmds/events")).run();
+    case "quit":
+      return process.exit(0);
     default:
       throw new Error("Unknown answer");
   }
 }
-
-void run();
-
-// TODO: Make sure the UI never stops.

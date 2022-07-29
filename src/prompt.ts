@@ -406,7 +406,7 @@ class AutoComplete extends EnquirerAutocomplete {
     }
     typed = typed.toLowerCase();
 
-    const split = typed.split(/[,;\s]+/).reverse();
+    const split = typed.split(/[,;]+/).reverse();
 
     let result = split
       .map((typed) => {

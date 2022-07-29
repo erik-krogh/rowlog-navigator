@@ -3,7 +3,7 @@ import * as api from "../api/api";
 import * as eventFetcher from "../api/eventFetcher";
 import * as colors from "ansi-colors";
 
-export async function run() {
+export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvad vil du med aktiviteter?", [
     {
       name: "search",
@@ -17,6 +17,10 @@ export async function run() {
       name: "most-participated",
       message: "Hvem har deltaget i flest aktiviteter",
     },
+    {
+      name: "back",
+      message: "Tilbage",
+    },
   ]);
 
   switch (answer) {
@@ -26,6 +30,8 @@ export async function run() {
       return await mostCreated();
     case "most-participated":
       return await mostParticipated();
+    case "back":
+      return await (await import("../main")).mainPrompt();
     default:
       throw new Error("Unknown answer");
   }
@@ -71,6 +77,8 @@ async function search() {
         (p.cancelled ? " | Afmeldt!" : "")
     );
   });
+
+  return await run();
 }
 
 async function mostCreated() {
@@ -91,6 +99,8 @@ async function mostCreated() {
         " aktiviteter"
     );
   });
+
+  return await run();
 }
 
 async function mostParticipated() {
@@ -118,4 +128,6 @@ async function mostParticipated() {
         " aktiviteter"
     );
   });
+
+  return await run();
 }

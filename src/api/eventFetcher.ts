@@ -98,7 +98,7 @@ async function fetchCurrentEvents(): Promise<Event[]> {
 
     const participants = $("table.box_borders tr:not(:first-child)")
       .map((i, el) => {
-        // name | comment | signed up | id
+        // name | comment | signed up | id
         let [rawName, comment, signedUp] = $(el)
           .find("td")
           .map((i, el) => $(el).text().trim())
