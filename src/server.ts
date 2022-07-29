@@ -3,12 +3,11 @@ import express from "express";
 import * as eventFetcher from "./api/eventFetcher";
 import * as api from "./api/api";
 
-setInterval(() => {
+(function cache() {
   console.log("Refreshing cache...");
   void eventFetcher.events();
-  void api.members();
-  void api.trips();
-}, 60 * 1000); // every minute is fine, because the cached are kept for an hour anyway.
+  setTimeout(cache, 60 * 1000); // every minute is fine, because they cache is kept for an hour anyway.
+})();
 
 // start the server
 const app = express();
