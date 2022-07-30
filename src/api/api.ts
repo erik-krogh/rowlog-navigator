@@ -310,15 +310,28 @@ export const members: () => Promise<MemberData> = util.cache(async () => {
 
 async function fetchMembers(): Promise<Member[]> {
   let seenMembers = new Set<number>();
-  let offset = 0;
   let membersRaw: MemberRaw[] = [];
 
+  const memberTypesPromise = memberTypes(); // starting early to speed up fetching
+
+  const fetchRaw = async (offset: number): Promise<MemberRaw[]> => {
+    const url = `https://rowlog.com/api/members?limit=100&offset=${offset}`;
+    return JSON.parse(await fetch(url));
+  };
+
+  const fetches: Promise<MemberRaw[]>[] = [];
+  for (let i = 0; i < 10; i++) {
+    // prefetching the first 10, because that covered all the members last I checked.
+    fetches.push(fetchRaw(i * 100));
+  }
+
   let progress = true;
+  let iteration = 0;
   while (progress) {
     progress = false;
-    const url = `https://rowlog.com/api/members?limit=100&offset=${offset}`;
 
-    const data = JSON.parse(await fetch(url));
+    const data = await (fetches[iteration] || // eslint-disable-line @typescript-eslint/no-misused-promises
+      (fetches[iteration] = fetchRaw(iteration * 100)));
     for (const member of data) {
       const id = member.id;
       if (!seenMembers.has(id)) {
@@ -328,10 +341,10 @@ async function fetchMembers(): Promise<Member[]> {
       }
     }
 
-    offset += 100;
+    iteration++;
   }
 
-  const types = await memberTypes();
+  const types = await memberTypesPromise;
 
   return membersRaw
     .filter((member) => member.id) // guest have ID 0
