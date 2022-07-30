@@ -56,7 +56,7 @@ async function search() {
           " | " +
           e.route +
           " | " +
-          e.participants.length +
+          e.participants.filter((p) => !p.cancelled).length +
           " deltagere",
       };
     })
@@ -68,13 +68,16 @@ async function search() {
   console.log("");
   console.log("Deltagere:");
   event.participants.forEach((p) => {
+    const effect = p.cancelled ? colors.dim : colors.white;
     console.log(
-      p.memberName +
-        " (" +
-        members.getMemberByName(p.memberName).id +
-        ") | " +
-        p.comment +
-        (p.cancelled ? " | Afmeldt!" : "")
+      effect(
+        p.memberName +
+          " (" +
+          members.getMemberByName(p.memberName).id +
+          ") | " +
+          p.comment +
+          (p.cancelled ? " | Afmeldt!" : "")
+      )
     );
   });
 
