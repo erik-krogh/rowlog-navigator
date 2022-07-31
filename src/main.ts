@@ -55,7 +55,7 @@ export async function mainPrompt() {
     case "member-stats":
       return await (await import("./cmds/memberStats")).run();
     case "members":
-      return await (await import("./cmds/members")).run();
+      return await (await import("./cmds/members")).searchForMember();
     case "events":
       return await (await import("./cmds/events")).run();
     case "quit":

@@ -386,3 +386,20 @@ async function memberTypes(): Promise<MemberType[]> {
   const url = `https://rowlog.com/api/membertypes`;
   return JSON.parse(await fetch(url));
 }
+
+export type Permission = {
+  id: number;
+  description: string;
+  condition: string;
+  conditionPeriod: string;
+  conditionQty: number;
+  conditionType: string;
+  coxswainPermission: boolean;
+  permissionCode: string;
+  winterPermission: boolean;
+};
+
+export const permissions = util.cache<Promise<Permission[]>>(async () => {
+  const url = `https://rowlog.com/api/permissions`;
+  return JSON.parse(await fetch(url));
+}, 60 * 60);
