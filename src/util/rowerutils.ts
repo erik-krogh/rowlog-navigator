@@ -2,16 +2,20 @@ import * as prompt from "../prompt";
 import * as api from "../api/api";
 import * as colors from "ansi-colors";
 
-export async function promptRower(): Promise<api.Member> {
+export async function promptRower(ids?: number[]): Promise<api.Member> {
   const members = await api.members();
+  const idSet = ids ? new Set(ids) : null;
   const rowerSelection = await prompt.ask(
     "Hvilken roer?",
-    members.getAllMembers().map((m) => {
-      return {
-        name: m.id + "",
-        message: colors.bold(m.name) + " (" + m.id + ")",
-      };
-    })
+    members
+      .getAllMembers()
+      .filter((m) => !idSet || idSet.has(m.id))
+      .map((m) => {
+        return {
+          name: m.id + "",
+          message: colors.bold(m.name) + " (" + m.id + ")",
+        };
+      })
   );
   return members.getMember(+rowerSelection);
 }

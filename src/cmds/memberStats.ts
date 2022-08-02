@@ -109,7 +109,7 @@ async function mostCommon(data: api.TripData): Promise<void> {
 }
 
 async function partners(data: api.TripData): Promise<void> {
-  const rower = await promptRower();
+  const rower = await promptRower(data.getAllRowerIds());
 
   const partners = new Map<number, number>(); // rowserId -> shared distance
   data.getAllTripsForRower(rower.id).forEach((trip) => {

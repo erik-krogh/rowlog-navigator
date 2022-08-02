@@ -143,9 +143,17 @@ async function mostParticipated() {
 }
 
 async function eventsForMember() {
-  const rower = await promptRower();
   const events = await eventFetcher.events();
   const members = await api.members();
+  const allEventParticipants = events
+    .flatMap((e) => e.participants)
+    .map((p) => p.memberName)
+    .map((m) => members.getMemberByName(m))
+    .map((m) => m.id)
+    .sort()
+    // unique, check the previous one
+    .filter((id, i, arr) => id !== arr[i - 1]);
+  const rower = await promptRower(allEventParticipants);
   for (const event of events) {
     if (
       event.participants
@@ -161,4 +169,6 @@ async function eventsForMember() {
       );
     }
   }
+
+  return await run();
 }
