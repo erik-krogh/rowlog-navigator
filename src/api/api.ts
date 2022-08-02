@@ -108,10 +108,26 @@ async function fetchTrips(
   startDateRaw: string,
   endDateRaw: string
 ): Promise<Trip[]> {
-  const fetcher = new Cache("fetchTrips", (date) => {
+  const fetcher = new Cache("fetchTrips", async (date) => {
     const prevDate = new Date(date);
     prevDate.setDate(prevDate.getDate() - 1);
-    return fetchTripsRaw(prevDate.toISOString().substring(0, 10), date);
+    const res = await fetchTripsRaw(
+      prevDate.toISOString().substring(0, 10),
+      date
+    );
+    // some ahead of time checks, to make sure the saved cache entry is valid
+    {
+      const arr = JSON.parse(res);
+      if (!(arr instanceof Array)) {
+        throw new Error("Invalid response");
+      }
+      if (arr.length) {
+        if (!arr[0].createdDateTime) {
+          throw new Error("Invalid trip");
+        }
+      }
+    }
+    return res;
   });
 
   const seenTripIds = new Set<number>();
