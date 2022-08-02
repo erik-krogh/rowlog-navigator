@@ -2,20 +2,18 @@ import * as prompt from "../prompt";
 import * as api from "../api/api";
 import * as colors from "ansi-colors";
 
-export async function promptRower(
-  data: api.TripData
-): Promise<api.RowerDetails> {
+export async function promptRower(): Promise<api.Member> {
+  const members = await api.members();
   const rowerSelection = await prompt.ask(
     "Hvilken roer?",
-    data.getAllRowerIds().map((id) => {
+    members.getAllMembers().map((m) => {
       return {
-        name: id + "",
-        message:
-          data.getRowerDetails(id).rowerName + colors.dim(" (" + id + ")"),
+        name: m.id + "",
+        message: colors.bold(m.name) + " (" + m.id + ")",
       };
     })
   );
-  return data.getRowerDetails(Number(rowerSelection));
+  return members.getMember(+rowerSelection);
 }
 
 // cache a value for a specified number of seconds

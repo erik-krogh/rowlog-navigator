@@ -89,10 +89,10 @@ async function boatGlobal(data: api.TripData) {
 }
 
 async function boatIndividual(data: api.TripData) {
-  const rower = await promptRower(data);
+  const rower = await promptRower();
 
   const boats = new Map<number, number>(); // boatId -> distance
-  data.getAllTripsForRower(rower.memberId).forEach((trip) => {
+  data.getAllTripsForRower(rower.id).forEach((trip) => {
     boats.set(trip.boatId, (boats.get(trip.boatId) || 0) + trip.distance);
   });
 

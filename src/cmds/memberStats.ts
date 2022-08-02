@@ -109,16 +109,16 @@ async function mostCommon(data: api.TripData): Promise<void> {
 }
 
 async function partners(data: api.TripData): Promise<void> {
-  const rower = await promptRower(data);
+  const rower = await promptRower();
 
   const partners = new Map<number, number>(); // rowserId -> shared distance
-  data.getAllTripsForRower(rower.memberId).forEach((trip) => {
+  data.getAllTripsForRower(rower.id).forEach((trip) => {
     trip.participants.forEach((participant) => {
       if (!participant.memberId) {
         return; // guest
       }
 
-      if (participant.memberId !== rower.memberId) {
+      if (participant.memberId !== rower.id) {
         partners.set(
           participant.memberId,
           (partners.get(participant.memberId) || 0) + trip.distance

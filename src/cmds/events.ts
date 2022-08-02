@@ -2,6 +2,7 @@ import * as prompt from "../prompt";
 import * as api from "../api/api";
 import * as eventFetcher from "../api/eventFetcher";
 import * as colors from "ansi-colors";
+import { promptRower } from "../util/rowerutils";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvad vil du med aktiviteter?", [
@@ -18,6 +19,10 @@ export async function run(): Promise<void> {
       message: "Hvem har deltaget i flest aktiviteter",
     },
     {
+      name: "events-for-member",
+      message: "Se hvilke aktiviteter en roer har deltaget i",
+    },
+    {
       name: "back",
       message: "Tilbage",
     },
@@ -30,6 +35,8 @@ export async function run(): Promise<void> {
       return await mostCreated();
     case "most-participated":
       return await mostParticipated();
+    case "events-for-member":
+      return await eventsForMember();
     case "back":
       return await (await import("../main")).mainPrompt();
     default:
@@ -133,4 +140,25 @@ async function mostParticipated() {
   });
 
   return await run();
+}
+
+async function eventsForMember() {
+  const rower = await promptRower();
+  const events = await eventFetcher.events();
+  const members = await api.members();
+  for (const event of events) {
+    if (
+      event.participants
+        .map((p) => members.getMemberByName(p.memberName))
+        .some((p) => p.id === rower.id)
+    ) {
+      console.log(
+        event.name +
+          " | " +
+          event.route +
+          " | " +
+          event.start.toLocaleDateString()
+      );
+    }
+  }
 }
