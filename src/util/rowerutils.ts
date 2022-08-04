@@ -1,9 +1,9 @@
 import * as prompt from "../prompt";
-import * as api from "../api/api";
+import type * as api from "../api/api"; // don't import, it's a circular dependency
 import * as colors from "ansi-colors";
 
 export async function promptRower(ids?: number[]): Promise<api.Member> {
-  const members = await api.members();
+  const members = await (await import("../api/api")).members();
   const idSet = ids ? new Set(ids) : null;
   const rowerSelection = await prompt.ask(
     "Hvilken roer?",

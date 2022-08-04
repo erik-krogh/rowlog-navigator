@@ -100,7 +100,7 @@ export const trips: () => Promise<TripData> = util.cache(async () => {
   yesterday.setDate(yesterday.getDate() - 1);
 
   return new TripData(
-    await fetchTrips("2021-11-01", yesterday.toISOString().substring(0, 10)) // TODO: Not hardcoded.
+    await fetchTrips("2021-10-31", yesterday.toISOString().substring(0, 10)) // TODO: Not hardcoded.
   );
 }, 60 * 60);
 
