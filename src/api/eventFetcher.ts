@@ -137,6 +137,9 @@ async function fetchCurrentEvents(): Promise<Event[]> {
 }
 
 function parseRowDate(raw: string): Date {
+  if (!raw) {
+    return new Date(0);
+  }
   // 26-07-2022 15:00 -> 2022-07-26T15:00:00.000Z
   const [date, time] = raw.split(" ");
   const [day, month, year] = date.split("-");
