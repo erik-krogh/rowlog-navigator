@@ -55,6 +55,7 @@ app.get("/events.ical", async (req, res) => {
     const cal = ics.createEvents(
       events
         .filter((e) => e.current)
+        .filter((e) => e.start)
         .map((e) => {
           console.log(JSON.stringify(e, null, 2));
           return {
