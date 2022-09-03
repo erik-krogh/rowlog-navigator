@@ -55,7 +55,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
     );
     const cal = ics.createEvents(
       events
-        .filter((e) => e.current)
+        // .filter((e) => e.current) // TODO comment in?
         .filter((e) => e.start && e.end)
         .map((e) => ({
           ...e,
