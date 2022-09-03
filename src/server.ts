@@ -63,25 +63,30 @@ app.get("/events.ical", async (req, res) => {
         }))
         .map((e) => {
           console.log(JSON.stringify(e, null, 2));
-          return {
-            title: e.name,
-            start: dateToDateArray(new Date(e.start)),
-            duration: { seconds: (e.end.getTime() - e.start.getTime()) / 1000 },
-            description: e.description,
-            url: "https://rokort.dk/index.php?page=event," + e.eventId,
-            busyStatus: "FREE",
-            organizer: { name: e.creator },
-            attendees: e.participants
-              .filter((p) => !p.cancelled)
-              .map((p) => {
-                return {
-                  name: p.memberName,
-                  rsvp: true,
-                  partstat: "ACCEPTED",
-                  role: "OPT-PARTICIPANT",
-                };
-              }),
-          };
+          try {
+            return {
+              title: e.name,
+              start: dateToDateArray(new Date(e.start)),
+              duration: { seconds: (e.end.getTime() - e.start.getTime()) / 1000 },
+              description: e.description,
+              url: "https://rokort.dk/index.php?page=event," + e.eventId,
+              busyStatus: "FREE",
+              organizer: { name: e.creator },
+              attendees: e.participants
+                .filter((p) => !p.cancelled)
+                .map((p) => {
+                  return {
+                    name: p.memberName,
+                    rsvp: true,
+                    partstat: "ACCEPTED",
+                    role: "OPT-PARTICIPANT",
+                  };
+                }),
+            };
+          } catch (e) {
+            console.log(JSON.stringify(e, null, 2));
+            throw e;
+          }
         })
     );
     if (cal.error) {
