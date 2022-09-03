@@ -52,7 +52,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
     console.log(
       events.filter((e) => e.current).length + " events are current."
     );
-    const cal = ics.createEvents(
+    /*const cal = ics.createEvents(
       events
         .filter((e) => e.current)
         .filter((e) => e.start && e.end)
@@ -91,12 +91,27 @@ app.get(/events\d*\.ics/, async (req, res) => {
             throw err;
           }
         })
-    );
+    ); */
+    const cal = ics.createEvents([
+      {
+        classification: "PUBLIC",
+        title: "myName",
+        start: [2018, 1, 1, 1, 1],
+        duration: {
+          seconds: 3600,
+        },
+        description: "this is a description",
+        url: "https://rokort.dk/index.php?page=event," + 999,
+        busyStatus: "FREE",
+        organizer: { name: "creator" },
+        attendees: [],
+      },
+    ]);
     if (cal.error) {
       console.error(cal.error);
       res.status(500).send(cal.error);
     } else {
-      res.type('ics');
+      res.type("ics");
       res.status(200).send(cal.value);
     }
   } catch (e) {
