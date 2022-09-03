@@ -70,7 +70,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
               classification: "PUBLIC",
               title: e.name,
               start: dateToDateArray(e.start),
-              startInputType: "local",
+              startInputType: "utc",
               duration: {
                 seconds: (e.end.getTime() - e.start.getTime()) / 1000,
               },
