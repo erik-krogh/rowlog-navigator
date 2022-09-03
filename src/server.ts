@@ -65,6 +65,7 @@ app.get("/events.ics", async (req, res) => {
           console.log(JSON.stringify(e, null, 2));
           try {
             return {
+              class: "PUBLIC",
               title: e.name,
               start: dateToDateArray(new Date(e.start)),
               duration: {
