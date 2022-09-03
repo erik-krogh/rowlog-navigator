@@ -2,6 +2,7 @@
 import express from "express";
 import * as eventFetcher from "./api/eventFetcher";
 import * as api from "./api/api";
+import type * as ExpressStatic from "express-serve-static-core";
 
 (function cache() {
   console.log("Refreshing cache...");
@@ -12,7 +13,11 @@ import * as api from "./api/api";
 // start the server
 const app = express();
 
-app.use(async (req, res, next) => {
+const requestLogin = async (
+  req: ExpressStatic.Request,
+  res: ExpressStatic.Response,
+  next: ExpressStatic.NextFunction
+) => {
   if (!req.headers || !req.headers.authorization) {
     res.status(401).send("Unauthorized");
     return;
@@ -24,9 +29,9 @@ app.use(async (req, res, next) => {
   } else {
     return next();
   }
-});
+};
 
-app.get("/events", (req, res) => {
+app.get("/events", requestLogin, (req, res) => {
   console.log("Fetching events...");
   eventFetcher
     .events()
@@ -38,6 +43,63 @@ app.get("/events", (req, res) => {
       res.status(500).send(e.message);
     });
 });
+
+import * as ics from "ics";
+app.get("/events.ical", async (req, res) => {
+  try {
+    const events = await eventFetcher.events();
+    console.log(events.length + " events found.");
+    console.log(
+      events.filter((e) => e.current).length + " events are current."
+    );
+    const cal = ics.createEvents(
+      events
+        .filter((e) => e.current)
+        .map((e) => {
+          console.log(JSON.stringify(e, null, 2));
+          return {
+            title: e.name,
+            start: dateToDateArray(e.start),
+            duration: { seconds: (e.end.getTime() - e.start.getTime()) / 1000 },
+            description: e.description,
+            url: "https://rokort.dk/index.php?page=event," + e.eventId,
+            busyStatus: "FREE",
+            organizer: { name: e.creator },
+            attendees: e.participants
+              .filter((p) => !p.cancelled)
+              .map((p) => {
+                return {
+                  name: p.memberName,
+                  rsvp: true,
+                  partstat: "ACCEPTED",
+                  role: "OPT-PARTICIPANT",
+                };
+              }),
+          };
+        })
+    );
+    if (cal.error) {
+      console.error(cal.error);
+      res.status(500).send(cal.error);
+    } else {
+      res.status(200).send(cal.value);
+    }
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e.message);
+  }
+});
+
+function dateToDateArray(d: Date): ics.DateArray {
+  // [number, number, number, number, number]
+  return [
+    d.getFullYear(),
+    d.getMonth() + 1,
+    d.getDate(),
+    d.getHours(),
+    d.getMinutes(),
+  ];
+}
 
 // start the server
 const port = process.env.PORT || 9001;
