@@ -34,6 +34,7 @@ app.get("/events", (req, res) => {
       res.status(200).json(events);
     })
     .catch((e) => {
+      console.error(e);
       res.status(500).send(e.message);
     });
 });
