@@ -45,6 +45,7 @@ app.get("/events", requestLogin, (req, res) => {
 });
 
 import * as ics from "ics";
+// TODO: Cache!
 app.get(/events\d*\.ics/, async (req, res) => {
   try {
     const events = await eventFetcher.events();
@@ -61,7 +62,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
           start: new Date(e.start),
           end: new Date(e.end),
         }))
-        .map((e) : ics.EventAttributes => {
+        .map((e): ics.EventAttributes => {
           console.log(JSON.stringify(e, null, 2));
           try {
             return {
@@ -73,9 +74,8 @@ app.get(/events\d*\.ics/, async (req, res) => {
               },
               description: e.description,
               url: "https://rokort.dk/index.php?page=event," + e.eventId,
-              busyStatus: "FREE"
-              /* ,
-              organizer: { name: e.creator },
+              busyStatus: "FREE",
+              organizer: { name: e.creator, email: "dummy@example.org" },
               attendees: e.participants
                 .filter((p) => !p.cancelled)
                 .map((p) => {
@@ -84,8 +84,9 @@ app.get(/events\d*\.ics/, async (req, res) => {
                     rsvp: true,
                     partstat: "ACCEPTED",
                     role: "OPT-PARTICIPANT",
+                    email: "dummy@example.org",
                   };
-                }), */
+                }),
             };
           } catch (err) {
             console.log(JSON.stringify(e, null, 2));
