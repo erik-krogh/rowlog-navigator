@@ -45,7 +45,7 @@ app.get("/events", requestLogin, (req, res) => {
 });
 
 import * as ics from "ics";
-app.get("/events.ical", async (req, res) => {
+app.get("/events.ics", async (req, res) => {
   try {
     const events = await eventFetcher.events();
     console.log(events.length + " events found.");
