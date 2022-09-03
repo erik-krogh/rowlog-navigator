@@ -55,11 +55,11 @@ app.get("/events.ical", async (req, res) => {
     const cal = ics.createEvents(
       events
         .filter((e) => e.current)
-        .filter(e => e.start && e.end)
+        .filter((e) => e.start && e.end)
         .map((e) => ({
+          ...e,
           start: new Date(e.start),
           end: new Date(e.end),
-          ...e,
         }))
         .map((e) => {
           console.log(JSON.stringify(e, null, 2));
@@ -67,7 +67,9 @@ app.get("/events.ical", async (req, res) => {
             return {
               title: e.name,
               start: dateToDateArray(new Date(e.start)),
-              duration: { seconds: (e.end.getTime() - e.start.getTime()) / 1000 },
+              duration: {
+                seconds: (e.end.getTime() - e.start.getTime()) / 1000,
+              },
               description: e.description,
               url: "https://rokort.dk/index.php?page=event," + e.eventId,
               busyStatus: "FREE",
