@@ -83,9 +83,9 @@ app.get("/events.ical", async (req, res) => {
                   };
                 }),
             };
-          } catch (e) {
+          } catch (err) {
             console.log(JSON.stringify(e, null, 2));
-            throw e;
+            throw err;
           }
         })
     );
