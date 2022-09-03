@@ -45,7 +45,7 @@ app.get("/events", requestLogin, (req, res) => {
 });
 
 import * as ics from "ics";
-// TODO: Cache!
+// TODO: Cache! The timezones are off.
 app.get(/events\d*\.ics/, async (req, res) => {
   try {
     const events = await eventFetcher.events();
@@ -107,16 +107,10 @@ app.get(/events\d*\.ics/, async (req, res) => {
     res.status(500).send(e.message);
   }
 });
-
+// in UTC
 function dateToDateArray(d: Date): ics.DateArray {
   // [number, number, number, number, number]
-  return [
-    d.getFullYear(),
-    d.getMonth() + 1,
-    d.getDate(),
-    d.getHours(),
-    d.getMinutes(),
-  ];
+  return [d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes()];
 }
 
 // start the server
