@@ -61,11 +61,11 @@ app.get("/events.ics", async (req, res) => {
           start: new Date(e.start),
           end: new Date(e.end),
         }))
-        .map((e) => {
+        .map((e) : ics.EventAttributes => {
           console.log(JSON.stringify(e, null, 2));
           try {
             return {
-              class: "PUBLIC",
+              classification: "PUBLIC",
               title: e.name,
               start: dateToDateArray(new Date(e.start)),
               duration: {
