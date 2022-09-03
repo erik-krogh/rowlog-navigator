@@ -64,7 +64,7 @@ async function search() {
           e.route +
           " | " +
           e.participants.filter((p) => !p.cancelled).length +
-          " deltagere",
+          " deltagere " + e.start.toLocaleDateString(),
       };
     })
   );
@@ -165,7 +165,7 @@ async function eventsForMember() {
           " | " +
           event.route +
           " | " +
-          event.start.toLocaleDateString()
+          event.start.toLocaleDateString() // TODO; Format better, this is US-only
       );
     }
   }
