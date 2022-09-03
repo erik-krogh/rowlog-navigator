@@ -60,7 +60,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
         .map((e) => ({
           ...e,
           start: new Date(e.start),
-          end: new Date(e.end),
+          end: new Date(e.end), // TODO: Should be converted before!
         }))
         .map((e): ics.EventAttributes => {
           console.log(JSON.stringify(e, null, 2));
@@ -69,7 +69,8 @@ app.get(/events\d*\.ics/, async (req, res) => {
             return {
               classification: "PUBLIC",
               title: e.name,
-              start: dateToDateArray(new Date(e.start)),
+              start: dateToDateArray(e.start),
+              startInputType: "local",
               duration: {
                 seconds: (e.end.getTime() - e.start.getTime()) / 1000,
               },
@@ -110,7 +111,13 @@ app.get(/events\d*\.ics/, async (req, res) => {
 // in UTC
 function dateToDateArray(d: Date): ics.DateArray {
   // [number, number, number, number, number]
-  return [d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes()];
+  return [
+    d.getUTCFullYear(),
+    d.getUTCMonth() + 1,
+    d.getUTCDate(),
+    d.getUTCHours(),
+    d.getUTCMinutes(),
+  ];
 }
 
 // start the server
