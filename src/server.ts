@@ -64,6 +64,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
         }))
         .map((e): ics.EventAttributes => {
           console.log(JSON.stringify(e, null, 2));
+          const url = "https://rokort.dk/index.php?page=event," + e.eventId;
           try {
             return {
               classification: "PUBLIC",
@@ -72,8 +73,8 @@ app.get(/events\d*\.ics/, async (req, res) => {
               duration: {
                 seconds: (e.end.getTime() - e.start.getTime()) / 1000,
               },
-              description: e.description,
-              url: "https://rokort.dk/index.php?page=event," + e.eventId,
+              description: e.description.trim() + "\n\n" + url,
+              url,
               busyStatus: "FREE",
               organizer: { name: e.creator, email: "dummy@example.org" },
               attendees: e.participants
