@@ -96,6 +96,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
       console.error(cal.error);
       res.status(500).send(cal.error);
     } else {
+      res.type('ics');
       res.status(200).send(cal.value);
     }
   } catch (e) {
