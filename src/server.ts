@@ -60,7 +60,7 @@ app.get("/events.ical", async (req, res) => {
           console.log(JSON.stringify(e, null, 2));
           return {
             title: e.name,
-            start: dateToDateArray(e.start),
+            start: dateToDateArray(new Date(e.start)),
             duration: { seconds: (e.end.getTime() - e.start.getTime()) / 1000 },
             description: e.description,
             url: "https://rokort.dk/index.php?page=event," + e.eventId,
