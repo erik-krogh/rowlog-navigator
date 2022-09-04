@@ -45,7 +45,9 @@ app.get("/events", requestLogin, (req, res) => {
 });
 
 import * as ics from "ics";
-// TODO: Cache! The timezones are off. Move into separate file.
+// TODO: Cache!
+// TODO: Handle cancelled events
+// TODO: Move into separate file.
 app.get(/events\d*\.ics/, async (req, res) => {
   try {
     const events = await eventFetcher.events();
@@ -75,7 +77,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
               duration: {
                 seconds: (e.end.getTime() - e.start.getTime()) / 1000,
               },
-              description: e.description.trim() + "\n\n" + url,
+              description: (e.description || "").trim() + "\n\n" + url,
               url,
               busyStatus: "FREE",
               organizer: { name: e.creator, email: "dummy@example.org" },
