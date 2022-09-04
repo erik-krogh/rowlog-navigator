@@ -5,7 +5,6 @@ import * as api from "./api/api";
 import type * as ExpressStatic from "express-serve-static-core";
 
 (function cache() {
-  console.log("Refreshing cache...");
   void eventFetcher.events();
   setTimeout(cache, 60 * 1000); // every minute is fine, because they cache is kept for an hour anyway.
 })();
