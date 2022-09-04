@@ -17,6 +17,7 @@ export type Event = {
   end: Date;
   lastResp: Date;
   distance?: number;
+  cancelled?: boolean;
   current: boolean;
   participants: {
     memberName: string;
@@ -160,6 +161,8 @@ const cacheFolder = path.join(appRoot.path, "work-cache", "events");
 export const events = cache<Promise<Event[]>>(async () => {
   const config = getConfig();
 
+  const currentEventsIds = await saveCurrentEvents();
+
   // If the server is configured, then try to use it.
   if (config.ROW_NAV_SERVER) {
     const resp = await got.get(config.ROW_NAV_SERVER + "/events", {
@@ -171,19 +174,11 @@ export const events = cache<Promise<Event[]>>(async () => {
 
     const events: Event[] = JSON.parse(resp.body);
     // dates are stringified in JSON, so we need to parse them.
-    for (const event of events) {
-      event.start = new Date(event.start);
-      event.end = new Date(event.end);
-      event.lastResp = new Date(event.lastResp);
-      event.participants.forEach((p) => {
-        p.signedUp = new Date(p.signedUp);
-      });
-    }
+    fixEventDates(events, currentEventsIds);
     return events;
   }
 
   // else, do it locally.
-  const currentEventsIds = await saveCurrentEvents();
   const res: Event[] = [];
   for (const file of fs.readdirSync(cacheFolder)) {
     const event = JSON.parse(
@@ -192,38 +187,65 @@ export const events = cache<Promise<Event[]>>(async () => {
     event.current = currentEventsIds.has(event.eventId);
     res.push(event);
   }
+  fixEventDates(res, currentEventsIds);
 
   return res;
 }, 60 * 60);
 
-export async function saveCurrentEvents() {
+function fixEventDates(events: Event[], currentEvents: Set<number>) {
+  for (const event of events) {
+    event.start = new Date(event.start);
+    event.end = new Date(event.end);
+    event.lastResp = new Date(event.lastResp);
+    event.participants.forEach((p) => {
+      p.signedUp = new Date(p.signedUp);
+    });
+
+    // Figuring out of an event has been cancelled.
+    if (
+      event.start.getTime() > Date.now() &&
+      !currentEvents.has(event.eventId) && 
+      !event.cancelled
+    ) {
+      event.cancelled = true;
+      console.log(
+        "Marking: " + event.name + "(" + event.eventId + ") as cancelled"
+      );
+      saveEvent(event);
+    }
+  }
+}
+
+export async function saveCurrentEvents(): Promise<Set<number>> {
   const currentEvents = await fetchCurrentEvents();
 
   fs.mkdirSync(cacheFolder, { recursive: true });
 
-  saveEvents(currentEvents, cacheFolder);
+  saveEvents(currentEvents);
 
-  const currentEventsIds = new Set(currentEvents.map((c) => c.eventId));
-  return currentEventsIds;
+  return new Set(currentEvents.map((c) => c.eventId));
 }
 
-function saveEvents(events: Event[], folder: string) {
+function saveEvents(events: Event[]) {
   for (const event of events) {
-    const file = path.join(folder, `${event.eventId}.json`);
-    if (fs.existsSync(file)) {
-      // find old participants not in the new, add them and mark them as cancelled
-      const newParticipantNames = new Set(
-        event.participants.map((p) => p.memberName)
-      );
-      for (const oldParticipant of JSON.parse(fs.readFileSync(file, "utf8"))
-        .participants) {
-        if (!newParticipantNames.has(oldParticipant.memberName)) {
-          oldParticipant.cancelled = true;
-          event.participants.push(oldParticipant);
-        }
+    saveEvent(event);
+  }
+}
+function saveEvent(event: Event) {
+  const file = path.join(cacheFolder, `${event.eventId}.json`);
+  if (fs.existsSync(file)) {
+    // find old participants not in the new, add them and mark them as cancelled
+    const newParticipantNames = new Set(
+      event.participants.map((p) => p.memberName)
+    );
+    for (const oldParticipant of JSON.parse(fs.readFileSync(file, "utf8"))
+      .participants) {
+      if (!newParticipantNames.has(oldParticipant.memberName)) {
+        oldParticipant.cancelled = true;
+        event.participants.push(oldParticipant);
       }
     }
-
-    fs.writeFileSync(file, JSON.stringify(event, null, 2));
   }
+
+  fs.writeFileSync(file, JSON.stringify(event, null, 2));
 }
