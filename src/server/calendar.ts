@@ -15,32 +15,15 @@ export const icsExport = cache<Promise<string>>(async () => {
       .filter((e) => !e.cancelled)
       .map((e): ics.EventAttributes => {
         console.log(JSON.stringify(e, null, 2));
-        const url = "https://rokort.dk/index.php?page=event," + e.eventId;
         try {
           return {
             classification: "PUBLIC",
             title: e.name,
             start: dateToDateArray(e.start),
-            startInputType: "local",
-            startOutputType: "local",
             duration: {
               seconds: (e.end.getTime() - e.start.getTime()) / 1000,
             },
-            description: (e.description || "").trim() + "\n\n" + url,
-            url,
-            busyStatus: "FREE",
-            organizer: { name: e.creator, email: "dummy@example.org" },
-            attendees: e.participants
-              .filter((p) => !p.cancelled)
-              .map((p) => {
-                return {
-                  name: p.memberName,
-                  rsvp: true,
-                  partstat: "ACCEPTED",
-                  role: "OPT-PARTICIPANT",
-                  email: "dummy@example.org",
-                };
-              }),
+            description: writeDescription(e),
           };
         } catch (err) {
           console.log(JSON.stringify(e, null, 2));
@@ -55,6 +38,18 @@ export const icsExport = cache<Promise<string>>(async () => {
     return addTimeZone(cal.value);
   }
 }, 60 * 60);
+
+function writeDescription(e: eventFetcher.Event): string {
+  const url = "https://rokort.dk/index.php?page=event," + e.eventId;
+
+  let res = (e.description || "").trim();
+  res += "\n\n";
+  res += url + "\n";
+  res += "Rute: " + e.route + " (" + e.distance + "km)\n";
+  res += e.participants.filter((e) => !e.cancelled).length + " deltagere\n";
+
+  return res;
+}
 
 // in UTC
 function dateToDateArray(d: Date): ics.DateArray {
