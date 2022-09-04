@@ -5,16 +5,14 @@ import * as ics from "ics";
 
 // TODO: Handle cancelled events
 export const icsExport = cache<Promise<string>>(async () => {
+  console.log("Fetching events... " + new Date());
   const events = await eventFetcher.events();
-  console.log(events.length + " events found.");
-  console.log(events.filter((e) => e.current).length + " events are current.");
   const cal = ics.createEvents(
     events
       // .filter((e) => e.current) // TODO comment in?
       .filter((e) => e.start && e.end)
       .filter((e) => !e.cancelled)
       .map((e): ics.EventAttributes => {
-        console.log(JSON.stringify(e, null, 2));
         try {
           return {
             classification: "PUBLIC",
