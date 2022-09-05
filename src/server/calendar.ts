@@ -32,7 +32,7 @@ export const icsExport = cache<Promise<string>>(async () => {
     console.error(cal.error);
     throw cal.error;
   } else {
-    return timezoneAndRefreshFixes(cal.value);
+    return cal.value;
   }
 }, 60 * 60);
 
@@ -53,6 +53,7 @@ function writeDescription(e: eventFetcher.Event): string {
 
 // in UTC
 function dateToDateArray(d: Date): ics.DateArray {
+  d = new Date(d.getTime() - copenhagenOffset(d));
   // [number, number, number, number, number]
   return [
     d.getUTCFullYear(),
@@ -63,14 +64,10 @@ function dateToDateArray(d: Date): ics.DateArray {
   ];
 }
 
-function timezoneAndRefreshFixes(ical: string): string {
-  ical = ical.replace(/DTSTART:/g, "DTSTART;TZID=Europe/Copenhagen:");
+function copenhagenOffset(d: Date): number {
+  function convertTZ(date: Date, tzString: string) {
+    return new Date(date.toLocaleString("en-US", { timeZone: tzString }));
+  }
 
-  // 15m refresh
-  ical = ical.replace(
-    /X-PUBLISHED-TTL:PT1H/g,
-    "X-PUBLISHED-TTL:PT15M\nREFRESH-INTERVAL;VALUE=DURATION:PT15M"
-  );
-
-  return ical;
+  return convertTZ(d, "Europe/Copenhagen").getTime() - d.getTime();
 }
