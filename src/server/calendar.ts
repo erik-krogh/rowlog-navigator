@@ -44,7 +44,8 @@ function writeDescription(e: eventFetcher.Event): string {
   res += "\n\n";
   res += url + "\n";
   if (e.route) {
-    res += "Rute: " + e.route + " (" + e.distance + "km)\n";
+    res +=
+      "Rute: " + e.route + (e.distance ? " (" + e.distance + "km)" : "") + "\n";
   }
   res += e.participants.filter((e) => !e.cancelled).length + " deltagere\n";
 
@@ -67,7 +68,10 @@ function timezoneAndRefreshFixes(ical: string): string {
   ical = ical.replace(/DTSTART:/g, "DTSTART;TZID=Europe/Copenhagen:");
 
   // 15m refresh
-  ical = ical.replace(/X-PUBLISHED-TTL:PT1H/g, "X-PUBLISHED-TTL:PT15M\nREFRESH-INTERVAL;VALUE=DURATION:PT15M");
+  ical = ical.replace(
+    /X-PUBLISHED-TTL:PT1H/g,
+    "X-PUBLISHED-TTL:PT15M\nREFRESH-INTERVAL;VALUE=DURATION:PT15M"
+  );
 
   return ical;
 }
