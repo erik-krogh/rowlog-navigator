@@ -6,7 +6,7 @@ import type * as ExpressStatic from "express-serve-static-core";
 
 (function cache() {
   void eventFetcher.events();
-  setTimeout(cache, 60 * 1000); // every minute is fine, because they cache is kept for an hour anyway.
+  setTimeout(cache, 60 * 60 * 1000); // refresh every hour
 })();
 
 // start the server

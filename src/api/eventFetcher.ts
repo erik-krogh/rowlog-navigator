@@ -157,7 +157,7 @@ function parseRowDate(raw: string): Date {
 }
 
 const cacheFolder = path.join(appRoot.path, "work-cache", "events");
-// cached for an hour.
+// cached for 5 minutes.
 export const events = cache<Promise<Event[]>>(async () => {
   const config = getConfig();
 
@@ -190,7 +190,7 @@ export const events = cache<Promise<Event[]>>(async () => {
   fixEventDates(res, currentEventsIds);
 
   return res;
-}, 60 * 60);
+}, 5 * 60);
 
 function fixEventDates(events: Event[], currentEvents: Set<number>) {
   for (const event of events) {
