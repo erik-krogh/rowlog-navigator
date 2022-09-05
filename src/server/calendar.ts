@@ -33,7 +33,7 @@ export const icsExport = cache<Promise<string>>(async () => {
     console.error(cal.error);
     throw cal.error;
   } else {
-    return addTimeZone(cal.value);
+    return timezoneAndRefreshFixes(cal.value);
   }
 }, 60 * 60);
 
@@ -63,6 +63,11 @@ function dateToDateArray(d: Date): ics.DateArray {
   ];
 }
 
-function addTimeZone(ical: string): string {
-  return ical.replace(/DTSTART:/g, "DTSTART;TZID=Europe/Copenhagen:");
+function timezoneAndRefreshFixes(ical: string): string {
+  ical = ical.replace(/DTSTART:/g, "DTSTART;TZID=Europe/Copenhagen:");
+
+  // 15m refresh
+  ical = ical.replace(/X-PUBLISHED-TTL:PT1H/g, "X-PUBLISHED-TTL:PT15M\nREFRESH-INTERVAL;VALUE=DURATION:PT15M");
+
+  return ical;
 }
