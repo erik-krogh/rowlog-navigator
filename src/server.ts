@@ -46,6 +46,7 @@ app.get("/events", requestLogin, (req, res) => {
 import { icsExport } from "./server/calendar";
 
 app.get(/events\d*\.ics/, async (req, res) => {
+  console.log("Someone requested the calendar " + new Date());
   try {
     res.type("text/calendar");
     res.status(200).send(await icsExport());

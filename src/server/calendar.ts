@@ -5,7 +5,6 @@ import * as ics from "ics";
 
 // TODO: Handle cancelled events
 export const icsExport = cache<Promise<string>>(async () => {
-  console.log("Fetching events... " + new Date());
   const events = await eventFetcher.events();
   const cal = ics.createEvents(
     events
