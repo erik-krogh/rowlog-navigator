@@ -43,7 +43,9 @@ function writeDescription(e: eventFetcher.Event): string {
   let res = (e.description || "").trim();
   res += "\n\n";
   res += url + "\n";
-  res += "Rute: " + e.route + " (" + e.distance + "km)\n";
+  if (e.route) {
+    res += "Rute: " + e.route + " (" + e.distance + "km)\n";
+  }
   res += e.participants.filter((e) => !e.cancelled).length + " deltagere\n";
 
   return res;
