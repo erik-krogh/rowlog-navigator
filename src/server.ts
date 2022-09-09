@@ -43,13 +43,25 @@ app.get("/events", requestLogin, (req, res) => {
     });
 });
 
-import { icsExport } from "./server/calendar";
+import { icsAcitivitesExport, icsProtocolExport } from "./server/calendar";
 
 app.get(/events\d*\.ics/, async (req, res) => {
   console.log("Someone requested the calendar (" + req.url + ") " + new Date());
   try {
     res.type("text/calendar");
-    res.status(200).send(await icsExport());
+    res.status(200).send(await icsAcitivitesExport());
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e.message);
+  }
+});
+
+app.get(/protocol\d*\.ics/, async (req, res) => {
+  console.log("Someone requested the protocol (" + req.url + ") " + new Date());
+  return res.status(401).send("Unauthorized"); // This was only an experiment, not intended to be used
+  try {
+    res.type("text/calendar");
+    res.status(200).send(await icsProtocolExport());
   } catch (e) {
     console.error(e);
     res.status(500).send(e.message);

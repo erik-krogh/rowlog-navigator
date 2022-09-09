@@ -1,10 +1,10 @@
 import { cache } from "../util/rowerutils";
 import * as eventFetcher from "../api/eventFetcher";
+import * as api from "../api/api";
 
 import * as ics from "ics";
 
-// TODO: Handle cancelled events
-export const icsExport = cache<Promise<string>>(async () => {
+export const icsAcitivitesExport = cache<Promise<string>>(async () => {
   const events = await eventFetcher.events();
   const cal = ics.createEvents(
     events
@@ -69,5 +69,31 @@ function copenhagenOffset(d: Date): number {
     return new Date(date.toLocaleString("en-US", { timeZone: tzString }));
   }
 
-  return convertTZ(d, "Europe/Copenhagen").getTime() - d.getTime();
+  return (
+    convertTZ(d, "UTC").getTime() - convertTZ(d, "Europe/Copenhagen").getTime()
+  );
 }
+
+export const icsProtocolExport = cache<Promise<string>>(async () => {
+  const trips = (await api.trips()).getTrips();
+  const cal = ics.createEvents(
+    trips.map((t): ics.EventAttributes => {
+      return {
+        classification: "PUBLIC",
+        title: t.description,
+        start: dateToDateArray(t.startDateTime),
+        duration: {
+          seconds: (t.endDateTime.getTime() - t.startDateTime.getTime()) / 1000,
+        },
+        description: t.distance + "km\n" + t.participants.length + " deltagere",
+      };
+    })
+  );
+
+  if (cal.error) {
+    console.error(cal.error);
+    throw cal.error;
+  } else {
+    return cal.value;
+  }
+}, 60 * 60);
