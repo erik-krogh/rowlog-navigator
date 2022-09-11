@@ -70,7 +70,7 @@ function copenhagenOffset(d: Date): number {
   }
 
   return (
-    convertTZ(d, "UTC").getTime() - convertTZ(d, "Europe/Copenhagen").getTime()
+    convertTZ(d, "Europe/Copenhagen").getTime() - convertTZ(d, "UTC").getTime()
   );
 }
 
