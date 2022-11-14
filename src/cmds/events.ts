@@ -23,6 +23,10 @@ export async function run(): Promise<void> {
       message: "Se hvilke aktiviteter en roer har deltaget i",
     },
     {
+      name: "find-potential-long-trip",
+      message: "Find ture der måske burde være registreret som langture",
+    },
+    {
       name: "back",
       message: "Tilbage",
     },
@@ -64,7 +68,12 @@ async function search() {
           e.route +
           " | " +
           e.participants.filter((p) => !p.cancelled).length +
-          " deltagere " + e.start.toLocaleDateString(),
+          " deltagere " +
+          e.start.toLocaleDateString() +
+          " " +
+          e.start.getHours() +
+          ":" +
+          e.start.getMinutes(),
       };
     })
   );
@@ -82,6 +91,8 @@ async function search() {
           " (" +
           members.getMemberByName(p.memberName).id +
           ") | " +
+          members.getMemberByName(p.memberName).email +
+          " | " +
           p.comment +
           (p.cancelled ? " | Afmeldt!" : "")
       )
