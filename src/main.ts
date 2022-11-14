@@ -44,6 +44,10 @@ export async function mainPrompt() {
       message: "Aktiviteter",
     },
     {
+      name: "trips",
+      message: "Søg i roprotokolen",
+    },
+    {
       name: "quit",
       message: "Afslut",
     },
@@ -58,6 +62,8 @@ export async function mainPrompt() {
       return await (await import("./cmds/members")).searchForMember();
     case "events":
       return await (await import("./cmds/events")).run();
+    case "trips":
+      return await (await import("./cmds/trips")).run();
     case "quit":
       return process.exit(0);
     default:

@@ -14,7 +14,11 @@ export async function run(): Promise<void> {
     },
     {
       name: "community",
-      message: "Hvem har roet flest andre roere?",
+      message: "Hvem har roet med flest andre roere?",
+    },
+    {
+      name: "kanin",
+      message: "Hvor mange kilometer har kaninerne roet?"
     },
     {
       name: "back",
@@ -29,6 +33,8 @@ export async function run(): Promise<void> {
       return await mostCommon(await api.trips());
     case "community":
       return await community(await api.trips());
+    case "kanin":
+      return await rabbit(await api.trips());
     case "back":
       return await (await import("../main")).mainPrompt();
     default:
@@ -55,15 +61,20 @@ async function community(data: api.TripData): Promise<void> {
     }
   });
 
+  const isRabbit = (id: number) => {
+    // if the first two digits are the current year, it's a rabbit
+    return id.toString().startsWith(new Date().getFullYear().toString().substring(2));
+  }
+
   // sort and print
   const sorted = Array.from(rowers.entries()).sort(
     (a, b) => b[1].size - a[1].size
   );
   sorted.forEach(([id, rowers]) => {
     console.log(
-      `${data.getRowerDetails(id).rowerName} har roet med ${
+      `${data.getRowerDetails(id).rowerName} (${id}) har roet med ${
         rowers.size
-      } andre roere`
+      } andre roere, heraf ${Array.from(rowers).filter(isRabbit).length} kaniner`
     );
   });
 
@@ -73,6 +84,10 @@ async function community(data: api.TripData): Promise<void> {
 async function mostCommon(data: api.TripData): Promise<void> {
   const partners = new Map<string, number>(); // rower1|rower2 -> shared distance
   for (const trip of data.getTrips()) {
+    if (trip.distance > 300) {
+      console.log("SKipping finland");
+      continue;
+    }
     for (let i = 0; i < trip.participants.length; i++) {
       for (let j = 0; j < trip.participants.length; j++) {
         const p1 = trip.participants[i];
@@ -139,6 +154,40 @@ async function partners(data: api.TripData): Promise<void> {
         " km"
     );
   });
+
+  return await run();
+}
+
+async function rabbit(data: api.TripData): Promise<void> {
+  // a rabbit is a member where the ID starts with the 2 digits from the current year
+  const members = await api.members();
+  const year = new Date().getFullYear().toString().substring(2, 4);
+
+  const rabbitIds = members.getAllMembers()
+    .filter((m) => m.id.toString().startsWith(year));
+
+  let sumDist = 0;
+
+  for (const rabbit of rabbitIds) {
+    const trips = data.getAllTripsForRower(rabbit.id);
+    const dist = trips.reduce((sum, t) => sum + t.distance, 0);
+    sumDist += dist;
+  }
+  console.log(`Kaninerne har roet ${sumDist} km`);
+
+  // print the total distance for all rowers for comparison
+  const allDist = members.getAllMembers()
+    .map((m) => data.getAllTripsForRower(m.id))
+    .reduce((sum, trips) => sum + trips.reduce((sum, t) => sum + t.distance, 0), 0);
+  console.log(`Alle roere har roet ${allDist} km`);
+
+  // compute total distance from trips. 
+  sumDist = 0;
+  for (const trip of data.getTrips()) {
+    sumDist += trip.distance * trip.participants.length;
+  }
+  console.log(`Alle roere har roet ${sumDist} km (fra turene)`);
+
 
   return await run();
 }

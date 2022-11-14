@@ -99,9 +99,12 @@ export const trips: () => Promise<TripData> = util.cache(async () => {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
-  return new TripData(
-    await fetchTrips("2021-10-31", yesterday.toISOString().substring(0, 10)) // TODO: Not hardcoded.
-  );
+   // TODO: Not hardcoded.
+  let trips = await fetchTrips("2021-10-31", yesterday.toISOString().substring(0, 10));
+  // everything after 2022-11-01 is not relevant for the current season
+  trips = trips.filter((t) => t.startDateTime < new Date("2022-11-01"));
+
+  return new TripData(trips);
 }, 60 * 60);
 
 async function fetchTrips(
