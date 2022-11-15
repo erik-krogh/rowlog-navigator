@@ -17,6 +17,10 @@ export async function run(): Promise<void> {
       message: "Givet en båd, hvem har roet den mest?",
     },
     {
+      name: "time-in-boat",
+      message: "Hvilken sammensætning af roer og båd har brugt mest tid samme?",
+    },
+    {
       name: "back",
       message: "Tilbage",
     },
@@ -28,6 +32,8 @@ export async function run(): Promise<void> {
       return await boatGlobal(await api.trips());
     case "boat-partner":
       return await boatPartner(await api.trips());
+    case "time-in-boat":
+      return await timeInBoat(await api.trips());
     case "back":
       return await (await import("../main")).mainPrompt();
     default:
@@ -100,6 +106,41 @@ async function boatIndividual(data: api.TripData) {
   const sorted = Array.from(boats.entries()).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, distance]) => {
     console.log(`Har roet ${data.getBoatName(id)} (${id}) ${distance} km`);
+  });
+
+  return await run();
+}
+
+async function timeInBoat(data: api.TripData) {
+  const boats = new Map<`${number}|${number}`, number>(); // memberId | boatAt -> duration
+  data.getTrips().forEach((trip) => {
+    
+    const duration = trip.endDateTime.getTime() - trip.startDateTime.getTime();
+    trip.participants.forEach((participant) => {
+      if (!participant.memberId) {
+        return; // guest
+      }
+      const key =
+        `${participant.memberId}|${trip.boatId}` as `${number}|${number}`;
+      boats.set(key, (boats.get(key) || 0) + duration);
+    });
+  });
+
+  // sort and print
+  const sorted = Array.from(boats.entries())
+    .sort((a, b) => b[1] - a[1])
+    // limit to 100
+    .slice(0, 100);
+  sorted.forEach(([key, duration]) => {
+    const [memberId, boatId] = key.split("|").map((s) => +s);
+    const rowerDetails = data.getRowerDetails(memberId);
+    const days = Math.floor(duration / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+    console.log(
+      `${rowerDetails.rowerName} (${memberId}) har roet ${data.getBoatName(
+        boatId
+      )} i ${days} dage og ${hours} timer`
+    );
   });
 
   return await run();

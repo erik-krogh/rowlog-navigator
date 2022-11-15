@@ -45,7 +45,7 @@ export async function mainPrompt() {
     },
     {
       name: "trips",
-      message: "Søg i roprotokolen",
+      message: "Roprotokolen",
     },
     {
       name: "quit",

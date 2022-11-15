@@ -422,3 +422,18 @@ export const permissions = util.cache<Promise<Permission[]>>(async () => {
   const url = `https://rowlog.com/api/permissions`;
   return JSON.parse(await fetch(url));
 }, 60 * 60);
+
+export type Route = {
+  id: number;
+  distance: number;
+  gmapLat: string;
+  gmapLng: string;
+  description: string;
+  longRow: string
+  routeGroupId: number;
+}
+
+export const routes = util.cache<Promise<Permission[]>>(async () => {
+  const url = `https://rowlog.com/api/routes`;
+  return JSON.parse(await fetch(url));
+}, 60 * 60);

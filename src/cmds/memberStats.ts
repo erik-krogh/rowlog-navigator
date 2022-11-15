@@ -17,6 +17,10 @@ export async function run(): Promise<void> {
       message: "Hvem har roet med flest andre roere?",
     },
     {
+      name: "most-time",
+      message: "Hvem har roet flest timer?",
+    },
+    {
       name: "kanin",
       message: "Hvor mange kilometer har kaninerne roet?"
     },
@@ -35,6 +39,8 @@ export async function run(): Promise<void> {
       return await community(await api.trips());
     case "kanin":
       return await rabbit(await api.trips());
+    case "most-time":
+      return await mostTime(await api.trips());
     case "back":
       return await (await import("../main")).mainPrompt();
     default:
@@ -84,10 +90,6 @@ async function community(data: api.TripData): Promise<void> {
 async function mostCommon(data: api.TripData): Promise<void> {
   const partners = new Map<string, number>(); // rower1|rower2 -> shared distance
   for (const trip of data.getTrips()) {
-    if (trip.distance > 300) {
-      console.log("SKipping finland");
-      continue;
-    }
     for (let i = 0; i < trip.participants.length; i++) {
       for (let j = 0; j < trip.participants.length; j++) {
         const p1 = trip.participants[i];
@@ -188,6 +190,46 @@ async function rabbit(data: api.TripData): Promise<void> {
   }
   console.log(`Alle roere har roet ${sumDist} km (fra turene)`);
 
+
+  return await run();
+}
+
+async function mostTime(data: api.TripData): Promise<void> {
+  const timeTaken = new Map<number, number>(); // rowerId -> time taken
+
+  data.getTrips().forEach((trip) => {
+    const duration = trip.endDateTime.getTime() - trip.startDateTime.getTime();
+    trip.participants.forEach((participant) => {
+      if (!participant.memberId) {
+        return; // guest
+      }
+      timeTaken.set(
+        participant.memberId,
+        (timeTaken.get(participant.memberId) || 0) + duration
+      );
+    });
+  });
+
+  // sort and print
+  const sorted = Array.from(timeTaken.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 100); // limit to 100
+
+  sorted.forEach(([id, time]) => {
+    const days = Math.floor(time / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    console.log(
+      data.getRowerDetails(id).rowerName +
+        " (" +
+        id +
+        ") | " +
+        days +
+        " dage og " +
+        hours +
+        " timer"
+    );
+  });
+      
 
   return await run();
 }
