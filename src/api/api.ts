@@ -2,6 +2,7 @@ import * as https from "https";
 import Cache from "../util/localcache";
 import { getConfig } from "../util/config";
 import * as util from "../util/rowerutils";
+import * as main from "../main";
 
 export function auth() {
   const config = getConfig();
@@ -99,10 +100,12 @@ export const trips: () => Promise<TripData> = util.cache(async () => {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
-   // TODO: Not hardcoded.
-  let trips = await fetchTrips("2021-10-31", yesterday.toISOString().substring(0, 10));
-  // everything after 2022-11-01 is not relevant for the current season
-  trips = trips.filter((t) => t.startDateTime < new Date("2022-11-01"));
+  const selectedSeason = main.getCurrentSeason();
+  let trips = await fetchTrips((selectedSeason - 1) + "-10-31", yesterday.toISOString().substring(0, 10));
+  // everything after first of november is in the next season.
+  trips = trips.filter((t) => t.startDateTime < new Date(selectedSeason + "-11-01"));
+  // everything before first of november previous year is in the previous season.
+  trips = trips.filter((t) => t.startDateTime >= new Date((selectedSeason - 1) + "-11-01"));
 
   return new TripData(trips);
 }, 60 * 60);
@@ -254,7 +257,7 @@ type MemberRaw = {
   contactPhoneNo: string;
   emailAddress: string;
   emailEvents: boolean;
-  enrolmentDate: boolean;
+  enrolmentDate: string;
   guest: boolean;
   id: number;
   keyNo: string;

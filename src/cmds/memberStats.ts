@@ -1,6 +1,7 @@
 import * as prompt from "../prompt";
 import * as api from "../api/api";
 import { promptRower } from "../util/rowerutils";
+import * as main from "../main";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvilken statestik?", [
@@ -67,9 +68,18 @@ async function community(data: api.TripData): Promise<void> {
     }
   });
 
+  const members = await api.members();
+
   const isRabbit = (id: number) => {
-    // if the first two digits are the current year, it's a rabbit
-    return id.toString().startsWith(new Date().getFullYear().toString().substring(2));
+    if (id === 0) {
+      return false; // guest
+    }
+    const member = members.getMember(id);
+    const date = new Date(member.raw.enrolmentDate);
+    
+    const currentSeason = main.getCurrentSeason(); // the year of the current season
+    // if the year matches the enrolment year, the rower is a kanin
+    return date.getFullYear() === currentSeason;
   }
 
   // sort and print

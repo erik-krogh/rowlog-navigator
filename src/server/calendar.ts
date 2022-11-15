@@ -8,7 +8,7 @@ export const icsAcitivitesExport = cache<Promise<string>>(async () => {
   const events = await eventFetcher.events();
   const cal = ics.createEvents(
     events
-      // .filter((e) => e.current) // TODO comment in?
+      // .filter((e) => e.current) // Comment this in to only export current events
       .filter((e) => e.start && e.end)
       .filter((e) => !e.cancelled)
       .map((e): ics.EventAttributes => {

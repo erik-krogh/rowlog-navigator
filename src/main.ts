@@ -3,6 +3,14 @@ import * as colors from "ansi-colors";
 import * as api from "./api/api";
 import * as eventFetcher from "./api/eventFetcher";
 import * as config from "./util/config";
+import { invalidateCaches } from "./util/rowerutils";
+
+const POSSIBLE_SEAONS = [2021, 2022, 2023];
+let selectedSeason = POSSIBLE_SEAONS[POSSIBLE_SEAONS.length - 1];
+
+export function getCurrentSeason(): number {
+  return selectedSeason;
+}
 
 export async function run(): Promise<void> {
   console.log("Velkommen til " + colors.green.bold("Rokort stats!"));
@@ -15,12 +23,16 @@ export async function run(): Promise<void> {
     });
   }
 
+  populateCaches();
+
+  return await mainPrompt();
+}
+
+function populateCaches() {
   void api.trips(); // async fetching to speed up first request.
   void eventFetcher.saveCurrentEvents(); // saving current events, so we don't miss when they are deleted.
   void eventFetcher.events(); // populating events cache.
   void api.members(); // populating members cache.
-
-  return await mainPrompt();
 }
 
 void run();
@@ -48,6 +60,11 @@ export async function mainPrompt() {
       message: "Roprotokolen",
     },
     {
+      name: "change-season",
+      message: "Skift sæson", // TODO: Clear cache.
+      hint: "valgt: " + selectedSeason,
+    },
+    {
       name: "quit",
       message: "Afslut",
     },
@@ -64,9 +81,27 @@ export async function mainPrompt() {
       return await (await import("./cmds/events")).run();
     case "trips":
       return await (await import("./cmds/trips")).run();
+    case "change-season":
+      return await changeSeason();
     case "quit":
       return process.exit(0);
     default:
       throw new Error("Unknown answer");
   }
+}
+
+async function changeSeason(): Promise<void> {
+  console.log("En sæson starter 1. november året før, og slutter 31. oktober.");
+  const answer = await prompt.ask(
+    "Vælg sæson",
+    POSSIBLE_SEAONS.map((s) => ({
+      name: s + "",
+      message: s + "",
+    }))
+  );
+
+  selectedSeason = +answer;
+  invalidateCaches();
+  populateCaches();
+  return await mainPrompt();
 }

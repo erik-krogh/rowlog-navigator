@@ -89,6 +89,7 @@ async function popularTrips() {
   const trips = await api.trips();
 
   const tripCounter = new Map<string, number>(); // routeName -> count
+  const distCounter = new Map<string, number>(); // routeName -> distance
 
   const routes = new Map<number, string>(); // routeId -> routeName
   for (const route of await api.routes()) {
@@ -98,12 +99,16 @@ async function popularTrips() {
   trips.getTrips().forEach((trip) => {
     const name = routes.get(trip.routeId) || trip.description;
     tripCounter.set(name, (tripCounter.get(name) || 0) + 1);
+    distCounter.set(name, (distCounter.get(name) || 0) + trip.distance);
   });
 
   // sort and print
-  const sorted = Array.from(tripCounter.entries()).sort((a, b) => b[1] - a[1]);
+  const sorted = Array.from(tripCounter.entries())
+    .sort((a, b) => b[1] - a[1])
+    
   sorted.forEach(([name, count]) => {
-    console.log(name + ": " + count + " ture");
+    const dist = distCounter.get(name) || 0;
+    console.log(name + ": " + count + " ture. " + dist + " båd km");
   });
 
   return await run();
