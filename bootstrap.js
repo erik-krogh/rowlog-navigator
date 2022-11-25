@@ -155,10 +155,20 @@
     }
   }
 
-  setTransitionEndSupport()
+  setTransitionEndSupport();
+
+  $(function () {
+    const text = $("textarea.foo").text();
+    $(".bar").html(text);
+  });
 
   return Util
 
 })(jQuery)
 
 export default Util
+
+$(function () {
+  const text = $("textarea.foo").text();
+  $(".bar").html(text);
+});
