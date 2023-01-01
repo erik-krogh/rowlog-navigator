@@ -4,6 +4,10 @@ import * as api from "./api/api";
 import * as eventFetcher from "./api/eventFetcher";
 import * as config from "./util/config";
 import { invalidateCaches } from "./util/rowerutils";
+import * as fs from "fs";
+import * as path from "path";
+import appRoot from "app-root-path";
+
 
 const POSSIBLE_SEAONS = [2021, 2022, 2023];
 let selectedSeason = POSSIBLE_SEAONS[POSSIBLE_SEAONS.length - 1];
@@ -61,8 +65,12 @@ export async function mainPrompt() {
     },
     {
       name: "change-season",
-      message: "Skift sæson", // TODO: Clear cache.
+      message: "Skift sæson",
       hint: "valgt: " + selectedSeason,
+    },
+    {
+      name: "clear-caches",
+      message: "Tøm cache",
     },
     {
       name: "quit",
@@ -83,6 +91,8 @@ export async function mainPrompt() {
       return await (await import("./cmds/trips")).run();
     case "change-season":
       return await changeSeason();
+    case "clear-caches":
+      return await clearAllCaches();
     case "quit":
       return process.exit(0);
     default:
@@ -102,6 +112,13 @@ async function changeSeason(): Promise<void> {
 
   selectedSeason = +answer;
   invalidateCaches();
+  populateCaches();
+  return await mainPrompt();
+}
+
+async function clearAllCaches(): Promise<void> {
+  invalidateCaches();
+  fs.unlinkSync(path.join(appRoot.path, "work-cache", "fetchTrips.cache"));
   populateCaches();
   return await mainPrompt();
 }
