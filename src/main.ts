@@ -7,14 +7,7 @@ import { invalidateCaches } from "./util/rowerutils";
 import * as fs from "fs";
 import * as path from "path";
 import appRoot from "app-root-path";
-
-
-const POSSIBLE_SEAONS = [2021, 2022, 2023];
-let selectedSeason = POSSIBLE_SEAONS[POSSIBLE_SEAONS.length - 1];
-
-export function getCurrentSeason(): number {
-  return selectedSeason;
-}
+import * as currentSeason from "./util/currentSeason";
 
 export async function run(): Promise<void> {
   console.log("Velkommen til " + colors.green.bold("Rokort stats!"));
@@ -66,7 +59,7 @@ export async function mainPrompt() {
     {
       name: "change-season",
       message: "Skift sæson",
-      hint: "valgt: " + selectedSeason,
+      hint: "valgt: " + currentSeason.getCurrentSeason(),
     },
     {
       name: "clear-caches",
@@ -104,13 +97,13 @@ async function changeSeason(): Promise<void> {
   console.log("En sæson starter 1. november året før, og slutter 31. oktober.");
   const answer = await prompt.ask(
     "Vælg sæson",
-    POSSIBLE_SEAONS.map((s) => ({
+    currentSeason.POSSIBLE_SEAONS.map((s) => ({
       name: s + "",
       message: s + "",
     }))
   );
 
-  selectedSeason = +answer;
+  currentSeason.changeCurrentSeason(+answer);
   invalidateCaches();
   populateCaches();
   return await mainPrompt();

@@ -2,7 +2,7 @@ import * as https from "https";
 import Cache from "../util/localcache";
 import { getConfig } from "../util/config";
 import * as util from "../util/rowerutils";
-import * as main from "../main";
+import * as currentSeason from "../util/currentSeason";
 
 export function auth() {
   const config = getConfig();
@@ -100,7 +100,7 @@ export const trips: () => Promise<TripData> = util.cache(async () => {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
-  const selectedSeason = main.getCurrentSeason();
+  const selectedSeason = currentSeason.getCurrentSeason();
   let trips = await fetchTrips((selectedSeason - 1) + "-10-31", yesterday.toISOString().substring(0, 10));
   // everything after first of november is in the next season.
   trips = trips.filter((t) => t.startDateTime < new Date(selectedSeason + "-11-01"));
