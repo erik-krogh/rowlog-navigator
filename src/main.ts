@@ -57,6 +57,10 @@ export async function mainPrompt() {
       message: "Roprotokolen",
     },
     {
+      name: "the-board",
+      message: "Statestik til bestyrelsen"
+    },
+    {
       name: "change-season",
       message: "Skift sæson",
       hint: "valgt: " + currentSeason.getCurrentSeason(),
@@ -82,6 +86,8 @@ export async function mainPrompt() {
       return await (await import("./cmds/events")).run();
     case "trips":
       return await (await import("./cmds/trips")).run();
+    case "the-board":
+      return await (await import("./cmds/theBoard")).run();
     case "change-season":
       return await changeSeason();
     case "clear-caches":

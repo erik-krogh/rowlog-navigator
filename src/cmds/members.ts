@@ -35,9 +35,15 @@ async function showMemberDetails(member: api.Member) {
     console.log("Systemadministrator");
   }
   console.log(`${member.permissions}`);
+  // birthdate. As dd/mm/yyyy
+  // console.log(`Fødselsdag: ${toPrettyDate(member.birthDate)}`);
   console.log(`Medlemstype: ${member.memberType}`);
 
   return await promptAfterDetails(member);
+}
+
+function toPrettyDate(date: Date) {
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 }
 async function promptAfterDetails(member: api.Member): Promise<void> {
   const answer = await prompt.ask("Hvad nu?", [

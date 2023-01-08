@@ -103,9 +103,8 @@ async function popularTrips() {
   });
 
   // sort and print
-  const sorted = Array.from(tripCounter.entries())
-    .sort((a, b) => b[1] - a[1])
-    
+  const sorted = Array.from(tripCounter.entries()).sort((a, b) => b[1] - a[1]);
+
   sorted.forEach(([name, count]) => {
     const dist = distCounter.get(name) || 0;
     console.log(name + ": " + count + " ture. " + dist + " båd km");

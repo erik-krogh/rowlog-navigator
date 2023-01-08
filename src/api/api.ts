@@ -101,11 +101,18 @@ export const trips: () => Promise<TripData> = util.cache(async () => {
   yesterday.setDate(yesterday.getDate() - 1);
 
   const selectedSeason = currentSeason.getCurrentSeason();
-  let trips = await fetchTrips((selectedSeason - 1) + "-10-31", yesterday.toISOString().substring(0, 10));
+  let trips = await fetchTrips(
+    selectedSeason - 1 + "-10-31",
+    yesterday.toISOString().substring(0, 10)
+  );
   // everything after first of november is in the next season.
-  trips = trips.filter((t) => t.startDateTime < new Date(selectedSeason + "-11-01"));
+  trips = trips.filter(
+    (t) => t.startDateTime < new Date(selectedSeason + "-11-01")
+  );
   // everything before first of november previous year is in the previous season.
-  trips = trips.filter((t) => t.startDateTime >= new Date((selectedSeason - 1) + "-11-01"));
+  trips = trips.filter(
+    (t) => t.startDateTime >= new Date(selectedSeason - 1 + "-11-01")
+  );
 
   return new TripData(trips);
 }, 60 * 60);
@@ -432,11 +439,46 @@ export type Route = {
   gmapLat: string;
   gmapLng: string;
   description: string;
-  longRow: string
+  longRow: string;
   routeGroupId: number;
-}
+};
 
 export const routes = util.cache<Promise<Permission[]>>(async () => {
   const url = `https://rowlog.com/api/routes`;
+  return JSON.parse(await fetch(url));
+}, 60 * 60);
+
+export type Boat = {
+  id: string;
+  name: string;
+  boatTypeId: number;
+  allowReservation: boolean;
+  blocked: boolean;
+  boatOrder: number;
+  description: string;
+  excludeFromStats: boolean;
+  ignoreSeats: boolean;
+  otherBoat: boolean;
+  ownerId: boolean;
+  purchaseDate: Date;
+  purchasePrice: number;
+  serialNo: string;
+};
+
+export const boats = util.cache<Promise<Boat[]>>(async () => {
+  const url = `https://rowlog.com/api/boats`;
+  return JSON.parse(await fetch(url));
+}, 60 * 60);
+
+export type BoatType = {
+  id: number;
+  description: string;
+  noOfSeats: number;
+  sortOrder: number;
+  mainTypeId: number;
+};
+
+export const boatTypes = util.cache<Promise<BoatType[]>>(async () => {
+  const url = `https://rowlog.com/api/boattypes`;
   return JSON.parse(await fetch(url));
 }, 60 * 60);

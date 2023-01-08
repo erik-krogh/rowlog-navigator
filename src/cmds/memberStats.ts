@@ -1,6 +1,7 @@
 import * as prompt from "../prompt";
 import * as api from "../api/api";
 import { promptRower } from "../util/rowerutils";
+import * as currentSeason from "../util/currentSeason";
 import * as main from "../main";
 
 export async function run(): Promise<void> {
@@ -77,9 +78,8 @@ async function community(data: api.TripData): Promise<void> {
     const member = members.getMember(id);
     const date = new Date(member.raw.enrolmentDate);
     
-    const currentSeason = main.getCurrentSeason(); // the year of the current season
     // if the year matches the enrolment year, the rower is a kanin
-    return date.getFullYear() === currentSeason;
+    return date.getFullYear() === currentSeason.getCurrentSeason();
   }
 
   // sort and print
