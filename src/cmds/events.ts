@@ -23,10 +23,6 @@ export async function run(): Promise<void> {
       message: "Se hvilke aktiviteter en roer har deltaget i",
     },
     {
-      name: "find-potential-long-trip",
-      message: "Find ture der måske burde være registreret som langture",
-    },
-    {
       name: "back",
       message: "Tilbage",
     },

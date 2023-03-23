@@ -143,6 +143,8 @@ async function fetchTrips(
     return res;
   });
 
+  const latestCacheKey : Date | undefined  = fetcher.getCacheKeys().map((x) => new Date(x)).sort((a, b) => b.getTime() - a.getTime())[0];
+
   const seenTripIds = new Set<number>();
   const rawTrips: RawTrip[] = [];
   // iterate each date between start and end
@@ -155,22 +157,20 @@ async function fetchTrips(
     date.setDate(date.getDate() + 1)
   ) {
     const dateStr = date.toISOString().substring(0, 10);
-    promises.push(
-      new Promise((resolve, reject) => {
-        fetcher
-          .get(dateStr)
-          .then((data) => {
-            for (const rawTrip of JSON.parse(data) as RawTrip[]) {
-              if (!seenTripIds.has(rawTrip.id)) {
-                seenTripIds.add(rawTrip.id);
-                rawTrips.push(rawTrip);
-              }
-            }
-            resolve();
-          })
-          .catch(reject);
-      })
-    );
+    promises.push((async () => {
+      // if within 10 days of latest cache entry, get fresh.
+      if (latestCacheKey && date.getTime() > latestCacheKey.getTime() - 10 * 24 * 60 * 60 * 1000) {
+        await fetcher.getFresh(dateStr);
+      }
+
+      const data = await fetcher.get(dateStr);
+      for (const rawTrip of JSON.parse(data) as RawTrip[]) {
+        if (!seenTripIds.has(rawTrip.id)) {
+          seenTripIds.add(rawTrip.id);
+          rawTrips.push(rawTrip);
+        }
+      }
+    })());
   }
 
   await Promise.all(promises);
@@ -443,9 +443,14 @@ export type Route = {
   routeGroupId: number;
 };
 
-export const routes = util.cache<Promise<Permission[]>>(async () => {
+export const routes = util.cache<Promise<Map<number, Permission>>>(async () => {
   const url = `https://rowlog.com/api/routes`;
-  return JSON.parse(await fetch(url));
+  const routes: Permission[] = JSON.parse(await fetch(url));
+  const res: Map<number, Permission> = new Map(); // routeId -> route
+  for (const route of routes) {
+    res.set(route.id, route);
+  }
+  return res;
 }, 60 * 60);
 
 export type Boat = {

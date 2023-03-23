@@ -91,13 +91,10 @@ async function popularTrips() {
   const tripCounter = new Map<string, number>(); // routeName -> count
   const distCounter = new Map<string, number>(); // routeName -> distance
 
-  const routes = new Map<number, string>(); // routeId -> routeName
-  for (const route of await api.routes()) {
-    routes.set(route.id, route.description);
-  }
+  const routes = await api.routes();
 
   trips.getTrips().forEach((trip) => {
-    const name = routes.get(trip.routeId) || trip.description;
+    const name = routes.get(trip.routeId).description || trip.description;
     tripCounter.set(name, (tripCounter.get(name) || 0) + 1);
     distCounter.set(name, (distCounter.get(name) || 0) + trip.distance);
   });

@@ -34,15 +34,28 @@ export default class Cache {
 
   async get(key: string): Promise<string> {
     key = key.replace(/\n|=/g, "");
+    if (this.cache && this.cache.has(key)) {
+      return this.cache.get(key) as string;
+    }
+    return await this.getFresh(key);
+  }
+
+  async getFresh(key: string): Promise<string> {
+    key = key.replace(/\n|=/g, "");
     if (this.cache === undefined) {
       this.initCache();
     }
-    if (!this.cache.has(key)) {
-      const val = (await this.getter(key)).replace(/\n/g, "");
-      this.cache.set(key, val);
-      fs.appendFileSync(this.getCachePath(), `${key}=${val}\n`);
+    const val = (await this.getter(key)).replace(/\n/g, "");
+    this.cache.set(key, val);
+    fs.appendFileSync(this.getCachePath(), `${key}=${val}\n`);
+    return val;
+  }
+
+  getCacheKeys(): string[] {
+    if (this.cache === undefined) {
+      this.initCache();
     }
-    return this.cache.get(key);
+    return Array.from(this.cache.keys());
   }
 
   private getCachePath(): string {
