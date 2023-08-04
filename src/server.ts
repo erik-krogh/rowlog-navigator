@@ -71,16 +71,13 @@ const allPermissions = util.cache(
 
 
 app.post("/permissions", async (req, res) => {
-  // the request body contains a JSON array of names, and we respond with a corresponding JSON object of permissions.
+  // the request body contains a JSON array of names, and we respond with a corresponding JSON array of permissions.
   let names = JSON.parse(req.body) as string[];
   const allPerms = await allPermissions();
   // remove duplicate spaces in the names
   names = names.map((n) => n.replace(/\s+/g, " ").trim());
 
-  const result : Record<string, string> = {};
-  for (const name of names) {
-    result[name] = allPerms[name];
-  }
+  const result : string[] = names.map((n) => allPerms[n] || "");
   res.status(200).send(JSON.stringify(result));
 });
 
