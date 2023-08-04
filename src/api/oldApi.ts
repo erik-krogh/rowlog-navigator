@@ -11,6 +11,12 @@ export function auth() {
   );
 }
 
+if (2 > 1) {
+  throw new Error("This file is not used anymore");
+}
+
+foo
+
 type RawRower = {
   memberId: number;
   rowerName: string;
@@ -145,7 +151,7 @@ async function fetchTrips(
 
   const latestCacheKey : Date | undefined  = fetcher.getCacheKeys().map((x) => new Date(x)).sort((a, b) => b.getTime() - a.getTime())[0];
 
-  const seenTripIds = new Set<number>();
+  const seenTripIds = new Set<string>();
   const rawTrips: RawTrip[] = [];
   // iterate each date between start and end
   const startDate = new Date(startDateRaw);
@@ -164,9 +170,10 @@ async function fetchTrips(
       }
 
       const data = await fetcher.get(dateStr);
-      for (const rawTrip of JSON.parse(data) as RawTrip[]) {
-        if (!seenTripIds.has(rawTrip.id)) {
-          seenTripIds.add(rawTrip.id);
+      for (const rawTrip of (JSON.parse(data) as RawTrip[]).reverse()) {
+        const key = rawTrip.id + "|" + rawTrip.description + "|" + rawTrip.distance;
+        if (!seenTripIds.has(key)) {
+          seenTripIds.add(key);
           rawTrips.push(rawTrip);
         }
       }

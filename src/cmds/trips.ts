@@ -1,5 +1,6 @@
 import * as prompt from "../prompt";
-import * as api from "../api/api";
+import * as api from "../api/newApi";
+import colors from "ansi-colors";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Søg rundt i ture", [
@@ -40,7 +41,7 @@ async function searchTrips() {
         message:
           trip.description +
           " " +
-          trip.participants.map((p) => p.rowerName).join(", ") +
+          trip.participants.map((p) => p.name).join(", ") +
           " " +
           trip.distance +
           "km " +
@@ -58,7 +59,7 @@ async function showTripDetails(trip: api.Trip) {
   console.log(trip.description + " " + trip.distance + "km");
   console.log("Start: " + trip.startDateTime);
   for (const participant of trip.participants) {
-    console.log(participant.rowerName + " (" + participant.memberId + ")");
+    console.log(participant.name + " (" + participant.id + ")");
   }
 
   return await promptAfterDetails(trip);
@@ -86,15 +87,15 @@ async function promptAfterDetails(trip: api.Trip): Promise<void> {
 }
 
 async function popularTrips() {
+  console.log(colors.bold("ONLY USING DESCRIPTION!"));
   const trips = await api.trips();
 
   const tripCounter = new Map<string, number>(); // routeName -> count
   const distCounter = new Map<string, number>(); // routeName -> distance
 
-  const routes = await api.routes();
 
   trips.getTrips().forEach((trip) => {
-    const name = routes.get(trip.routeId).description || trip.description;
+    const name = trip.description;
     tripCounter.set(name, (tripCounter.get(name) || 0) + 1);
     distCounter.set(name, (distCounter.get(name) || 0) + trip.distance);
   });

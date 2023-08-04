@@ -1,5 +1,5 @@
 import * as prompt from "../prompt";
-import * as api from "../api/api";
+import * as api from "../api/newApi";
 import { promptRower } from "../util/rowerutils";
 
 export async function run(): Promise<void> {
@@ -17,10 +17,6 @@ export async function run(): Promise<void> {
       message: "Givet en båd, hvem har roet den mest?",
     },
     {
-      name: "time-in-boat",
-      message: "Hvilken sammensætning af roer og båd har brugt mest tid samme?",
-    },
-    {
       name: "back",
       message: "Tilbage",
     },
@@ -32,8 +28,6 @@ export async function run(): Promise<void> {
       return await boatGlobal(await api.trips());
     case "boat-partner":
       return await boatPartner(await api.trips());
-    case "time-in-boat":
-      return await timeInBoat(await api.trips());
     case "back":
       return await (await import("../main")).mainPrompt();
     default:
@@ -46,49 +40,46 @@ async function boatPartner(data: api.TripData) {
 
   const boatSelection = await prompt.ask(
     "Select boat",
-    data.getAllBoatIds().map((id) => {
-      return {
-        name: id + "",
-        message: data.getBoatName(id),
-      };
-    })
+    data.getAllBoatNames()
   );
 
   data.getTrips().forEach((trip) => {
-    if (trip.boatId !== +boatSelection) {
+    if (trip.boatName !== boatSelection) {
       return;
     }
     trip.participants.forEach((participant) => {
-      if (!participant.memberId) {
+      if (!participant.id) { // TODO: does this happen?
         return; // guest
       }
       rowers.set(
-        participant.memberId,
-        (rowers.get(participant.memberId) || 0) + trip.distance
+        participant.id,
+        (rowers.get(participant.id) || 0) + trip.distance
       );
     });
   });
 
+  const members = await api.members();
+
   // sort and print
   const sorted = Array.from(rowers.entries()).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, distance]) => {
-    const rowerDetails = data.getRowerDetails(id);
-    console.log(`${rowerDetails.rowerName} (${id}) has rowed ${distance} km`);
+    const rowerDetails = members.getMember(id);
+    console.log(`${rowerDetails.name} (${id}) has rowed ${distance} km`);
   });
 
   return await run();
 }
 
 async function boatGlobal(data: api.TripData) {
-  const boats = new Map<number, number>(); // boatId -> distance
+  const boats = new Map<string, number>(); // boatName -> distance
   data.getTrips().forEach((trip) => {
-    boats.set(trip.boatId, (boats.get(trip.boatId) || 0) + trip.distance);
+    boats.set(trip.boatName, (boats.get(trip.boatName) || 0) + trip.distance);
   });
 
   // sort and print
   const sorted = Array.from(boats.entries()).sort((a, b) => b[1] - a[1]);
-  sorted.forEach(([id, distance]) => {
-    console.log(data.getBoatName(id) + " (" + id + ") | " + +distance + " km");
+  sorted.forEach(([name, distance]) => {
+    console.log(name + " | " + +distance + " km");
   });
 
   return await run();
@@ -97,50 +88,15 @@ async function boatGlobal(data: api.TripData) {
 async function boatIndividual(data: api.TripData) {
   const rower = await promptRower();
 
-  const boats = new Map<number, number>(); // boatId -> distance
+  const boats = new Map<string, number>(); // boatName -> distance
   data.getAllTripsForRower(rower.id).forEach((trip) => {
-    boats.set(trip.boatId, (boats.get(trip.boatId) || 0) + trip.distance);
+    boats.set(trip.boatName, (boats.get(trip.boatName) || 0) + trip.distance);
   });
 
   // sort and print
   const sorted = Array.from(boats.entries()).sort((a, b) => b[1] - a[1]);
-  sorted.forEach(([id, distance]) => {
-    console.log(`Har roet ${data.getBoatName(id)} (${id}) ${distance} km`);
-  });
-
-  return await run();
-}
-
-async function timeInBoat(data: api.TripData) {
-  const boats = new Map<`${number}|${number}`, number>(); // memberId | boatAt -> duration
-  data.getTrips().forEach((trip) => {
-    
-    const duration = trip.endDateTime.getTime() - trip.startDateTime.getTime();
-    trip.participants.forEach((participant) => {
-      if (!participant.memberId) {
-        return; // guest
-      }
-      const key =
-        `${participant.memberId}|${trip.boatId}` as `${number}|${number}`;
-      boats.set(key, (boats.get(key) || 0) + duration);
-    });
-  });
-
-  // sort and print
-  const sorted = Array.from(boats.entries())
-    .sort((a, b) => b[1] - a[1])
-    // limit to 100
-    .slice(0, 100);
-  sorted.forEach(([key, duration]) => {
-    const [memberId, boatId] = key.split("|").map((s) => +s);
-    const rowerDetails = data.getRowerDetails(memberId);
-    const days = Math.floor(duration / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-    console.log(
-      `${rowerDetails.rowerName} (${memberId}) har roet ${data.getBoatName(
-        boatId
-      )} i ${days} dage og ${hours} timer`
-    );
+  sorted.forEach(([name, distance]) => {
+    console.log(`Har roet ${name} ${distance} km`);
   });
 
   return await run();

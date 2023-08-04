@@ -8,3 +8,4 @@ work/
 test/sources/**/*.class
 work-cache/
 config.json
+backup/

@@ -1,7 +1,5 @@
 import * as prompt from "./prompt";
 import * as colors from "ansi-colors";
-import * as api from "./api/api";
-import * as eventFetcher from "./api/eventFetcher";
 import * as config from "./util/config";
 import { invalidateCaches } from "./util/rowerutils";
 import * as fs from "fs";
@@ -26,10 +24,11 @@ export async function run(): Promise<void> {
 }
 
 function populateCaches() {
-  void api.trips(); // async fetching to speed up first request.
+  // TODO: Do something here again.
+  /* void api.trips(); // async fetching to speed up first request.
   void eventFetcher.saveCurrentEvents(); // saving current events, so we don't miss when they are deleted.
   void eventFetcher.events(); // populating events cache.
-  void api.members(); // populating members cache.
+  void api.members(); // populating members cache. */
 }
 
 void run();
@@ -48,10 +47,10 @@ export async function mainPrompt() {
       name: "members",
       message: "Medlemsdatabasen",
     },
-    {
+    /* { // TODO: Implement events
       name: "events",
       message: "Aktiviteter",
-    },
+    }, */
     {
       name: "trips",
       message: "Roprotokolen",

@@ -81,13 +81,19 @@ async function search() {
   console.log("Deltagere:");
   event.participants.forEach((p) => {
     const effect = p.cancelled ? colors.dim : colors.white;
+    if (p.cancelled) {
+      return;
+    }
+    let memberDetails = "[unknown]";
+    const member = members.getMemberByName(p.memberName);
+    if (member) {
+      memberDetails = "\t" + member.id + "\t" + member.email + "\t" + member.phone;
+    }
+
     console.log(
       effect(
-        p.memberName +
-          " (" +
-          members.getMemberByName(p.memberName).id +
-          ") | " +
-          members.getMemberByName(p.memberName).email +
+        p.memberName + " " + 
+          memberDetails +
           " | " +
           p.comment +
           (p.cancelled ? " | Afmeldt!" : "")

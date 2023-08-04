@@ -1,5 +1,5 @@
 import * as prompt from "../prompt";
-import * as api from "../api/api";
+import * as api from "../api/newApi";
 import * as colors from "ansi-colors";
 
 export async function run(): Promise<void> {
@@ -7,10 +7,6 @@ export async function run(): Promise<void> {
     {
       name: "brabrand",
       message: "Brabrand kilometer. Hvem har roet mest på Brabrand?",
-    },
-    {
-      name: "register",
-      message: "Stats til registrer som sekrætæren kan bruge",
     },
     {
       name: "tour",
@@ -25,8 +21,6 @@ export async function run(): Promise<void> {
   switch (answer) {
     case "brabrand":
       return await brabrand();
-    case "register":
-      return await register();
     case "back":
       return await (await import("../main")).mainPrompt();
     case "tour":
@@ -58,9 +52,9 @@ async function tour() {
     0,
     0
   );
-  const previousMonth = goBackOneMonth(currentMonth);
   await printTourStats(currentMonth);
-  await printTourStats(previousMonth);
+  await printTourStats(goBackOneMonth(currentMonth));
+  await printTourStats(goBackOneMonth(goBackOneMonth(currentMonth)));
 
   async function printTourStats(toDate: Date) {
     // start by printing the from/to dates
@@ -76,20 +70,27 @@ async function tour() {
     });
     const members = await api.members();
 
-    console.log("Basseret på " + trips.length + " ture");
+    console.log("Baseret på " + trips.length + " ture");
 
     function printStat(color: string, stat: string, metric: Map<number, number>) {
       if (metric.size === 0) {
         console.log(`${color}: Ingen ture`);
       } else {
-        const sorted = Array.from(metric.entries()).sort((a, b) => b[1] - a[1]);
+        const sorted = Array.from(metric.entries()).filter(a => a[0] !== 0).sort((a, b) => b[1] - a[1]);
         const maxScore = sorted[0][1];
         const hasMaxScore = sorted.filter((x) => x[1] === maxScore);
         for (const mem of hasMaxScore) {
           const member = members.getMember(mem[0]);
-          console.log(
-            `${color}: ${member.name} (${member.id}): ${sorted[0][1]} ${stat}`
-          );
+          if (member) {
+            console.log(
+              `${color}: ${member.name} (${member.id}): ${mem[1]} ${stat}`
+            );
+          } else {
+            console.log(
+              `${color}: gæst? ${mem[0]}: ${mem[1]} ${stat}`
+            ); 
+          }
+          
         }
       }
     }
@@ -99,8 +100,8 @@ async function tour() {
       const map: Map<number, number> = new Map(); // memberId -> distance
       for (const trip of trips) {
         for (const participant of trip.participants) {
-          const distance = map.get(participant.memberId) || 0;
-          map.set(participant.memberId, distance + (trip.distance || 0));
+          const distance = map.get(participant.id) || 0;
+          map.set(participant.id, distance + (trip.distance || 0));
         }
       }
       printStat("Gul", "km", map);
@@ -114,8 +115,8 @@ async function tour() {
       for (const trip of trips) {
         if (brabrandFilter(trip)) {
           for (const participant of trip.participants) {
-            const distance = map.get(participant.memberId) || 0;
-            map.set(participant.memberId, distance + (trip.distance || 0));
+            const distance = map.get(participant.id) || 0;
+            map.set(participant.id, distance + (trip.distance || 0));
           }
         }
       }
@@ -125,19 +126,13 @@ async function tour() {
     // prikket = den med flest langturskilometer
     {
       const map: Map<number, number> = new Map(); // memberId -> distance
-      const routes = await api.routes();
       for (const trip of trips) {
         if (
-          trip.description?.toLowerCase().includes("langtur") ||
-          (trip.routeId &&
-            routes
-              .get(trip.routeId)
-              ?.description?.toLowerCase()
-              .includes("langtur"))
+          trip.longtrip
         ) {
           for (const participant of trip.participants) {
-            const distance = map.get(participant.memberId) || 0;
-            map.set(participant.memberId, distance + (trip.distance || 0));
+            const distance = map.get(participant.id) || 0;
+            map.set(participant.id, distance + (trip.distance || 0));
           }
         }
       }
@@ -148,13 +143,13 @@ async function tour() {
     {
       // kanin = medlemsnummer der starter med det nuværende år. E.g. medlemsnummer 19020 startede i 2019.
       const map: Map<number, number> = new Map(); // memberId -> distance
-      const rabbitPrefix = "22"; // TODO: now.getFullYear().toString().substring(2);
+      const rabbitPrefix = now.getFullYear().toString().substring(2);
 
       for (const trip of trips) {
         for (const participant of trip.participants) {
-          if (participant.memberId.toString().startsWith(rabbitPrefix)) {
-            const distance = map.get(participant.memberId) || 0;
-            map.set(participant.memberId, distance + (trip.distance || 0));
+          if (members.isRabbit(participant)) {
+            const distance = map.get(participant.id) || 0;
+            map.set(participant.id, distance + (trip.distance || 0));
           }
         }
       }
@@ -167,12 +162,12 @@ async function tour() {
       const map: Map<number, Set<number>> = new Map(); // memberId -> set of memberIds
       for (const trip of trips) {
         for (const participant of trip.participants) {
-          if (!map.has(participant.memberId)) {
-            map.set(participant.memberId, new Set());
+          if (!map.has(participant.id)) {
+            map.set(participant.id, new Set());
           }
-          const set = map.get(participant.memberId)!;
+          const set = map.get(participant.id)!;
           for (const otherParticipant of trip.participants) {
-            set.add(otherParticipant.memberId);
+            set.add(otherParticipant.id);
           }
         }
       }
@@ -213,8 +208,8 @@ async function brabrand() {
     if (brabrandFilter(trip)) {
       for (const participant of trip.participants) {
         map.set(
-          participant.memberId,
-          (map.get(participant.memberId) || 0) + trip.distance
+          participant.id,
+          (map.get(participant.id) || 0) + trip.distance
         );
       }
     }
@@ -233,120 +228,7 @@ async function brabrand() {
 }
 
 async function getBrabrandFilter() {
-  const routes = await api.routes();
-
   return (trip: api.Trip) => {
-    const route = trip.routeId ? routes.get(trip.routeId).description : "";
-    return (
-      trip.description.toLowerCase().includes("brabrand") ||
-      route?.toLowerCase().includes("brabrand")
-    );
+    return trip.description.toLowerCase().includes("brabrand");
   };
-}
-
-function getAge(mem: api.Member) {
-  const bDate: Date = mem.birthDate;
-  const now: Date = new Date();
-  const age =
-    ((now.getTime() - bDate.getTime()) / (1000 * 3600 * 24 * 365)) | 0;
-  return age;
-}
-
-function createAgeTable(members: api.Member[], ages: number[]) {
-  // ages is e.g. [13,18,24,59]. Which means 0-13, 14-18, 19-24, 25-59, 60+
-  const males = new Array(ages.length + 1).fill(0);
-  const females = new Array(ages.length + 1).fill(0);
-
-  outer: for (const member of members) {
-    for (const [index, age] of ages.entries()) {
-      if (getAge(member) <= age) {
-        if (member.raw.sex === "male") {
-          males[index]++;
-        } else {
-          females[index]++;
-        }
-        continue outer;
-      }
-    }
-    if (member.raw.sex === "male") {
-      males[males.length - 1]++;
-    } else {
-      females[females.length - 1]++;
-    }
-  }
-
-  console.log("Fordelt på køn og alder:");
-  console.log("Alder\tMænd\tKvinder");
-  for (const [index, age] of ages.entries()) {
-    let str = "";
-    if (index === 0) {
-      str += "0-" + age;
-    } else {
-      str += ages[index - 1] + 1 + "-" + age;
-    }
-    str += "\t";
-    str += males[index];
-    str += "\t";
-    str += females[index];
-    console.log(str);
-  }
-  console.log(
-    ages[ages.length - 1] +
-      1 +
-      "+\t" +
-      males[males.length - 1] +
-      "\t" +
-      females[females.length - 1]
-  );
-}
-
-async function register() {
-  // first data for "idrætssamvirket".
-  // samlet antal aktive medlemmer (number of members from api.members())
-  // fordelt på køn og alder. 13-18, 19-24, 25-59 og 60+.
-  console.log("Data til Idrætssamvirket");
-  const members = await (await api.members()).getAllMembers();
-  console.log("Totalt antal medlemmer: " + members.length + ".");
-  createAgeTable(members, [12, 18, 24, 59]);
-
-  console.log("\n");
-  // data for "centralt foreningsregister".
-  console.log("Data til Centralt Foreningsregister");
-  // samlet antal
-  console.log("Totalt antal medlemmer: " + members.length + ".");
-  createAgeTable(members, [18, 24, 39, 59, 69]);
-
-  const instructors = members.filter((m) =>
-    m.permissions.toLowerCase().includes("i")
-  );
-  console.log("Totalt antal instruktører: " + instructors.length + ".");
-  console.log("Instruktør fordeling på køn og alder:");
-  createAgeTable(instructors, [24]);
-
-  const boats: Map<number, api.Boat> = new Map();
-  for (const boat of await api.boats()) {
-    boats.set(+boat.id, boat);
-  }
-  const boatTypes: Map<number, api.BoatType> = new Map();
-  for (const type of await api.boatTypes()) {
-    boatTypes.set(+type.id, type);
-  }
-
-  const trips = await api.trips();
-  // Hvor mange der har været ude i Coastal både.
-  const coastal = members.filter((m) =>
-    trips.getAllTripsForRower(m.id).some((t) => {
-      const boat = boats.get(t.boatId);
-      const type = boat && boatTypes.get(boat.boatTypeId);
-      return type && type.description.toLowerCase().includes("coastal");
-    })
-  );
-
-  console.log(
-    "Totalt antal medlemmer der har været ude i Coastal både: " +
-      coastal.length +
-      "."
-  );
-
-  return await run();
 }
