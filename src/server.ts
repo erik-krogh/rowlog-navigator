@@ -72,15 +72,21 @@ const allPermissions = util.cache(
 
 app.post("/permissions", async (req, res) => {
   // the request body contains a JSON array of names, and we respond with a corresponding JSON array of permissions.
-  console.log(typeof req.body);
-  console.log(JSON.stringify(req.body));
-  let names = JSON.parse(req.body) as string[];
-  const allPerms = await allPermissions();
-  // remove duplicate spaces in the names
-  names = names.map((n) => n.replace(/\s+/g, " ").trim());
+  let data = "";
+  req.on("data", (chunk) => {
+    console.log("Got data: " + chunk);
+    data += chunk;
+  });
+  req.on("end", async () => {
+    console.log("No more data");
+    let names = JSON.parse(data) as string[];
+    const allPerms = await allPermissions();
+    // remove duplicate spaces in the names
+    names = names.map((n) => n.replace(/\s+/g, " ").trim());
 
-  const result : string[] = names.map((n) => allPerms[n] || "");
-  res.status(200).send(JSON.stringify(result));
+    const result : string[] = names.map((n) => allPerms[n] || "");
+    res.status(200).send(JSON.stringify(result));
+  });
 });
 
 // import { icsAcitivitesExport, icsProtocolExport } from "./server/calendar";
