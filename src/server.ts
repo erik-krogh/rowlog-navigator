@@ -55,7 +55,6 @@ const allPermissions = util.cache(
     const permissions: Record<string, string> = {};
     const tags = await api.tags();
     for (const member of members.getAllMembers()) {
-      console.log(JSON.stringify(member, null, 2));
       let perms = member.permissions.map((p) => {
         const tag = tags[p];
         return permissionMap[tag.name.trim() as keyof typeof permissionMap] || null;
