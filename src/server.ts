@@ -72,6 +72,8 @@ const allPermissions = util.cache(
 
 app.post("/permissions", async (req, res) => {
   // the request body contains a JSON array of names, and we respond with a corresponding JSON array of permissions.
+  console.log(typeof req.body);
+  console.log(JSON.stringify(req.body));
   let names = JSON.parse(req.body) as string[];
   const allPerms = await allPermissions();
   // remove duplicate spaces in the names
@@ -100,7 +102,3 @@ const port = process.env.PORT || 9001;
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
-
-(async function () {
-  console.log(JSON.stringify(await allPermissions(), null, 2));
-})();
