@@ -3,9 +3,14 @@ import express from "express";
 import * as api from "./api/newApi";
 import type * as ExpressStatic from "express-serve-static-core";
 import * as util from "./util/rowerutils";
+import https from "https";
+import http from "http";
+import fs from "fs";
 
 // start the server
 const app = express();
+
+app.use(express.static("public"));
 
 const requestLogin = async (
   req: ExpressStatic.Request,
@@ -105,6 +110,20 @@ app.get(/events\d*\.ics/, async (req, res) => {
 
 // start the server
 const port = process.env.PORT || 9001;
-app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
+https
+  .createServer(
+		// Provide the private and public key to the server by reading each
+		// file's content with the readFileSync() method.
+    {
+      key: fs.readFileSync("key.pem"),
+      cert: fs.readFileSync("cert.pem"),
+    },
+    app
+  )
+  .listen(port, () => {
+    console.log("server is runing at port " + port);
+  });
+
+http.createServer(app).listen(80, () => {
+  console.log("plaintext server is runing at port 80");
 });
