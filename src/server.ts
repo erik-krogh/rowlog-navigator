@@ -109,7 +109,7 @@ app.get(/events\d*\.ics/, async (req, res) => {
 });
 
 // start the server
-const port = process.env.PORT || 9001;
+const port = process.env.PORT || 443;
 https
   .createServer(
 		// Provide the private and public key to the server by reading each
