@@ -10,7 +10,7 @@ import fs from "fs";
 // start the server
 const app = express();
 
-app.use(express.static("public"));
+app.use(express.static("public", { dotfiles: 'allow' }));
 
 const requestLogin = async (
   req: ExpressStatic.Request,
