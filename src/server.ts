@@ -108,21 +108,21 @@ app.get(/events\d*\.ics/, async (req, res) => {
   } */
 });
 
+// Certificate
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/asr1.webbies.dk/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/asr1.webbies.dk/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/asr1.webbies.dk/chain.pem', 'utf8');
+
+const credentials = {
+	key: privateKey,
+	cert: certificate,
+	ca: ca
+};
+
 // start the server
-const port = process.env.PORT || 443;
-https
-  .createServer(
-		// Provide the private and public key to the server by reading each
-		// file's content with the readFileSync() method.
-    {
-      key: fs.readFileSync("key.pem"),
-      cert: fs.readFileSync("cert.pem"),
-    },
-    app
-  )
-  .listen(port, () => {
-    console.log("server is runing at port " + port);
-  });
+https.createServer(credentials, app).listen(443, () => {
+  console.log("server is runing at port 443");
+});
 
 http.createServer(app).listen(80, () => {
   console.log("plaintext server is runing at port 80");
