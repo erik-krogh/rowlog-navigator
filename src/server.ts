@@ -110,6 +110,19 @@ app.get(/events\d*\.ics/, async (req, res) => {
 
 // start the server
 const port = process.env.PORT || 443;
+https
+  .createServer(
+		// Provide the private and public key to the server by reading each
+		// file's content with the readFileSync() method.
+    {
+      key: fs.readFileSync("key.pem"),
+      cert: fs.readFileSync("cert.pem"),
+    },
+    app
+  )
+  .listen(port, () => {
+    console.log("server is runing at port " + port);
+  });
 
 http.createServer(app).listen(80, () => {
   console.log("plaintext server is runing at port 80");
