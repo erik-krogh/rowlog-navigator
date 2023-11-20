@@ -3,7 +3,7 @@ info:
   version: 0.0.1
   title: Rowlog navigator API
 servers:
-  - url: https://asr1.webbies.dk:9001/api
+  - url: https://asr1.webbies.dk/api/
 paths:
   /trips:
     get:
@@ -31,7 +31,6 @@ paths:
             application/json:    
               schema:
                 $ref: "#/components/schemas/Trip"
-paths:
   /members/{id}:
     get:
       summary: Get a member by ID
@@ -61,33 +60,32 @@ components:
     Trip:
       type: object
       required:
-        - id
-        - name
-        - description
-        - distance
-        - startDateTime
-        - boatName
-        - longtrip
-        - participants
+        - i
+        - d
+        - t
+        - b
+        - l
+        - p
       properties:
-        id:
-          type: integer
-          format: int64
-        name:
+        i:
           type: string
-        description:
+          description: A textual description of the trip.
+        d:
           type: string
-        distance:
-          type: number
-        startDateTime:
+          description: The distance rowed.
+        t:
           type: string
           format: date-time
-        boatName:
+          description: The date and time of the trip.
+        b:
           type: string
-        longtrip:
+          description: The name of the boat.
+        l:
           type: boolean
-        participants:
+          description: Whether the trip is a long trip. (A trip outside of our daily waters.)
+        p:
           type: array
+          description: The IDs of the members who participated in the trip.
           items:
             type: integer
     Member:

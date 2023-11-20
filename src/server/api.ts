@@ -31,8 +31,11 @@ router.get("/trips", checkToken, async (req, res) => {
 
     const respTrips = trips.map((trip) => {
       return {
-        ...trip,
-        participants: trip.participants.map((p) => {
+        i: trip.description,
+        t: trip.startDateTime,
+        d: trip.distance,
+        b: trip.boatName,
+        p: trip.participants.map((p) => {
           return p.id;
         }),
       };
