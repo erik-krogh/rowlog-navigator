@@ -46,5 +46,35 @@ router.get("/trips", checkToken, async (req, res) => {
   }
 });
 
+// Get a member by ID
+router.get("/members/:id", async (req, res) => {
+  try {
+    const memberId = Number(req.params.id); // Get the value of the 'id' path parameter
+    console.log(`Fetching member with ID ${memberId}...`);
+
+    const members = await newApi.members();
+    const member = members.getMember(memberId);
+
+    if (!member) {
+      res.status(404).send("Member not found");
+      return;
+    }
+
+    return res.status(200).json({
+      id: member.id,
+      username: member.username,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      name: member.name,
+      email: member.email,
+    });
+  } catch (e) {
+    console.error("Failed to get member");
+    console.error(e);
+    res.status(500).send("Failed to get member");
+  }
+});
+
+
 // Export the router
 export default router;

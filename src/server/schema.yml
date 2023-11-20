@@ -3,9 +3,9 @@ info:
   version: 0.0.1
   title: Rowlog navigator API
 servers:
-  - url: https://asr1.webbies.dk:9001
+  - url: https://asr1.webbies.dk:9001/api
 paths:
-  /api/trips:
+  /trips:
     get:
       summary: List all rowing trips
       operationId: listTrips
@@ -31,6 +31,31 @@ paths:
             application/json:    
               schema:
                 $ref: "#/components/schemas/Trip"
+paths:
+  /members/{id}:
+    get:
+      summary: Get a member by ID
+      operationId: getMemberById
+      tags:
+        - members
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the member to retrieve.
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The member object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        '404':
+          description: Member not found.
+
 components:
   schemas:
     Trip:
