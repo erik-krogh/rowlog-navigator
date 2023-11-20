@@ -3,7 +3,7 @@ info:
   version: 0.0.1
   title: Rowlog navigator API
 servers:
-  - url: https://52.252.49.230
+  - url: https://asr1.webbies.dk:9001
 paths:
   /api/trips:
     get:
