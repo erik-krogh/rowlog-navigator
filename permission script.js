@@ -22,8 +22,15 @@ var observer = new MutationObserver(function(mutations) {
     const names = table.find("tbody tr").toArray().map(e => $(e).children().first().text().trim());
 
     console.log("Posting the names " + JSON.stringify(names));
-    // request the permissions by POSTing the names to "http://52.252.49.230:9001/permissions";
-    $.post("http://52.252.49.230:9001/permissions", JSON.stringify(names), function(data, status) {
+
+    // put some placeholder text while we wait for the response.
+    table.find("thead").children().eq(1).text("Rettigheder (indlæser)");
+    table.find("tbody tr").each(function(i, e) {
+        $(e).children().eq(1).text("...");
+    });
+
+    // request the permissions by POSTing the names to "https://asr1.webbies.dk:9001/permissions";
+    $.post("https://asr1.webbies.dk:9001/permissions", JSON.stringify(names), function(data, status) {
         console.log("Got response: " + data + " with status " + status);
         // just console log on error
         if (status !== "success") {

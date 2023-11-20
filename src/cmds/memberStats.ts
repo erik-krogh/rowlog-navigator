@@ -25,6 +25,10 @@ export async function run(): Promise<void> {
       message: "Print de seneste ture",
     },
     {
+      name: "distance",
+      message: "Hvem har roet mest",
+    },
+    {
       name: "back",
       message: "Tilbage",
     },
@@ -39,6 +43,8 @@ export async function run(): Promise<void> {
       return await community(await api.trips());
     case "tours":
       return await tours(await api.trips());
+    case "distance":
+      return await distance(await api.trips());
     case "back":
       return await (await import("../main")).mainPrompt();
     default:
@@ -193,6 +199,40 @@ async function tours(data: api.TripData) {
       `${pDate}\t${dist}\t${participants}\t${trip.description}`
     );
   }
+
+  return await run();
+}
+
+async function distance(data: api.TripData) {
+  const members = await api.members();
+
+  const distMap = new Map<number, number>(); // rowerId -> distance
+
+  data.getTrips().forEach((trip) => {
+    trip.participants.forEach((participant) => {
+      if (!participant.id) {
+        return; // guest
+      }
+
+      distMap.set(
+        participant.id,
+        (distMap.get(participant.id) || 0) + trip.distance
+      );
+    });
+  });
+
+  // sort and print
+  const sorted = Array.from(distMap.entries()).sort((a, b) => b[1] - a[1]);
+  sorted.forEach(([id, distance]) => {
+    console.log(
+      members.getMember(id).name +
+        "\t" +
+        id +
+        "\t" +
+        +distance +
+        ""
+    );
+  });
 
   return await run();
 }

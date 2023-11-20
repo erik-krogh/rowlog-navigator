@@ -119,6 +119,12 @@ const credentials = {
 	ca: ca
 };
 
+import API from "./server/api";
+
+// Mount the API router at /api/ endpoints
+app.use("/api", API);
+
+
 // start the server
 https.createServer(credentials, app).listen(9001, () => {
   console.log("server is runing at port 9001");
@@ -127,3 +133,14 @@ https.createServer(credentials, app).listen(9001, () => {
 http.createServer(app).listen(80, () => {
   console.log("plaintext server is runing at port 80");
 });
+
+/*
+Certificate renewal:
+$ sudo certbot certonly --manual
+asr1.webbies.dk
+
+run through the steps.
+
+`certbot renew` is run with crontab (sudo crontab -e), so everything should just work.
+
+*/

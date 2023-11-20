@@ -13,6 +13,10 @@ export async function run(): Promise<void> {
       message: "Tour de ASR-trøjer",
     },
     {
+      name: "gf",
+      message: "Generalforsamling",
+    },
+    {
       name: "back",
       message: "Tilbage",
     },
@@ -21,10 +25,13 @@ export async function run(): Promise<void> {
   switch (answer) {
     case "brabrand":
       return await brabrand();
-    case "back":
-      return await (await import("../main")).mainPrompt();
     case "tour":
       return await tour();
+    case "gf":
+      return await generalforsamling();
+    case "back":
+      return await (await import("../main")).mainPrompt();
+    
     default:
       throw new Error("Unknown answer");
   }
@@ -231,4 +238,98 @@ async function getBrabrandFilter() {
   return (trip: api.Trip) => {
     return trip.description.toLowerCase().includes("brabrand");
   };
+}
+
+async function generalforsamling() {
+  /*
+  - Hvor mange km vi i alt har roet i år (båd og person km)
+  - Hvor mange langturskilometer vi har roet (båd og person km)
+  - Antal aktive roere i år
+  - Hvor mange personkilometer der er roet i år, fordelt på total, mænd, kvinder og gæster
+  - Hvor mange km de enkelte både har roet i år
+  - Hvor mange ture de enkelte både har roet i år
+  */
+
+  const trips = (await api.trips()).getTrips();
+
+  {
+    let totalBoatKM = 0;
+    let totalPersonKM = 0;
+    let totalLongTripBoatKM = 0;
+    let totalLongTripPersonKM = 0;
+    let totalActive = new Set<number>();
+    for (const trip of trips) {
+      const dist = trip.distance || 0;
+      totalBoatKM += dist;
+      totalPersonKM += dist * trip.participants.length;
+
+      if (trip.longtrip) {
+        totalLongTripBoatKM += dist;
+        totalLongTripPersonKM += dist * trip.participants.length;
+      }
+
+      for (const p of trip.participants) {
+        totalActive.add(p.id);
+      }
+    }
+    console.log("Total båd km: " + totalBoatKM);
+    console.log("Total person km: " + totalPersonKM);
+    console.log("Total langturs båd km: " + totalLongTripBoatKM);
+    console.log("Total langturs person km: " + totalLongTripPersonKM);
+    console.log("Antal aktive roere: " + totalActive.size);
+
+  }
+
+  {
+    let guestKM = 0;
+
+    const genderGrouping = new Map<string, number>();
+
+    for (const trip of trips) {
+      const dist = trip.distance;
+      for (const participant of trip.participants) {
+        if (participant.id === 0) {
+          guestKM += dist;
+        }
+        const details = await api.getMemberDetails(participant);
+        if (details === undefined) {
+          console.log("No details for " + participant.id + " internal: " + participant.internalId);
+          continue;
+        }
+        const gender = details.Gender;
+        genderGrouping.set(gender, (genderGrouping.get(gender)  || 0) + dist);
+      }
+    }
+
+    for (const [gender, value] of genderGrouping.entries()) {
+      console.log("Køn " + gender + ": " + value);
+    }
+    console.log("Gæst km: " + guestKM);
+  }
+
+  {
+    const boatGrouping = new Map<string, number>();
+    const tripGrouping = new Map<string, number>();
+
+    for (const trip of trips) {
+      const dist = trip.distance;
+      const boat = trip.boatName;
+      boatGrouping.set(boat, (boatGrouping.get(boat) || 0) + dist);
+      tripGrouping.set(boat, (tripGrouping.get(boat) || 0) + 1);
+    }
+
+    console.log("Båd km:");
+    // sort first
+    const sortedBoatGrouping = Array.from(boatGrouping.entries()).sort((a, b) => b[1] - a[1]);
+    for (const [boat, value] of sortedBoatGrouping) {
+      console.log(boat + ": " + value + " km");
+    }
+    console.log("Båd ture:");
+    const sortedTripGrouping = Array.from(tripGrouping.entries()).sort((a, b) => b[1] - a[1]);
+    for (const [boat, value] of sortedTripGrouping) {
+      console.log(boat + ": " + value + " ture");
+    }
+  }
+
+  return await run();
 }
