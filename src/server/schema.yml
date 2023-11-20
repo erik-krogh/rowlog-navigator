@@ -64,7 +64,7 @@ components:
         participants:
           type: array
           items:
-            $ref: "#/components/schemas/Member"
+            type: integer
     Member:
       type: object
       required:

@@ -29,7 +29,16 @@ router.get("/trips", checkToken, async (req, res) => {
 
     const trips = (await newApi.trips(Number(season))).getTrips();
 
-    res.json(trips);
+    const respTrips = trips.map((trip) => {
+      return {
+        ...trip,
+        participants: trip.participants.map((p) => {
+          return p.id;
+        }),
+      };
+    });
+
+    res.json(respTrips);
   } catch (e) {
     console.error("Failed to get trips");
     console.error(e);
