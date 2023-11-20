@@ -1,15 +1,11 @@
-# Taken from https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/petstore.yaml
-
 openapi: "3.0.0"
 info:
-  version: 1.0.0
-  title: Swagger Petstore
-  license:
-    name: MIT
+  version: 0.0.1
+  title: Rowlog navigator API
 servers:
-  - url: http://52.252.49.230:9001/api
+  - url: https://52.252.49.230
 paths:
-  /pets:
+  /api/trips:
     get:
       summary: List all rowing trips
       operationId: listTrips
