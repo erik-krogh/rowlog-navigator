@@ -79,18 +79,20 @@ async function community(data: api.TripData): Promise<void> {
     }
     const member = members.getMember(id);
     return members.isRabbit(member);
-  }
+  };
 
   // sort and print
   const sorted = Array.from(rowers.entries()).sort(
     (a, b) => b[1].size - a[1].size
   );
-  
+
   sorted.forEach(([id, rowers]) => {
     console.log(
       `${members.getMember(id).name} (${id}) har roet med ${
         rowers.size
-      } andre roere, heraf ${Array.from(rowers).filter(isRabbit).length} kaniner`
+      } andre roere, heraf ${
+        Array.from(rowers).filter(isRabbit).length
+      } kaniner`
     );
   });
 
@@ -108,7 +110,8 @@ async function mostCommon(data: api.TripData): Promise<void> {
           continue; // Only count each pair once.
         }
 
-        if (!p1.id || !p2.id) { // TODO: Doesn't happen anymore?
+        if (!p1.id || !p2.id) {
+          // TODO: Doesn't happen anymore?
           continue; // guest
         }
 
@@ -162,12 +165,7 @@ async function partners(data: api.TripData): Promise<void> {
   const sorted = Array.from(partners.entries()).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, distance]) => {
     console.log(
-      members.getMember(id).name +
-        " (" +
-        id +
-        ") | " +
-        +distance +
-        " km"
+      members.getMember(id).name + " (" + id + ") | " + +distance + " km"
     );
   });
 
@@ -195,15 +193,17 @@ async function tours(data: api.TripData) {
     const dist = trip.distance;
     const participants = trip.participants.length;
     const pDate = toPrettyDate(date);
-    console.log(
-      `${pDate}\t${dist}\t${participants}\t${trip.description}`
-    );
+    console.log(`${pDate}\t${dist}\t${participants}\t${trip.description}`);
   }
 
   return await run();
 }
 
 async function distance(data: api.TripData) {
+  const onlyLongTripRaw = await prompt.ask("Kun langture?", ["Nej", "Ja"]);
+
+  const onlyLongTrip = onlyLongTripRaw === "Ja";
+
   const members = await api.members();
 
   const distMap = new Map<number, number>(); // rowerId -> distance
@@ -212,6 +212,10 @@ async function distance(data: api.TripData) {
     trip.participants.forEach((participant) => {
       if (!participant.id) {
         return; // guest
+      }
+
+      if (onlyLongTrip && !trip.longtrip) {
+        return;
       }
 
       distMap.set(
@@ -224,14 +228,7 @@ async function distance(data: api.TripData) {
   // sort and print
   const sorted = Array.from(distMap.entries()).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, distance]) => {
-    console.log(
-      members.getMember(id).name +
-        "\t" +
-        id +
-        "\t" +
-        +distance +
-        ""
-    );
+    console.log(members.getMember(id).name + "\t" + id + "\t" + +distance + "");
   });
 
   return await run();

@@ -5,7 +5,8 @@ import * as config from "../util/config";
 import * as newApi from "../api/newApi";
 
 const checkToken = (req: Request, res: Response, next: NextFunction) => {
-  /* const authHeader = req.headers["authorization"];
+  console.log(JSON.stringify(req.headers, null, 2));
+  const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Extract the token
 
   if (token == null) {
@@ -16,7 +17,7 @@ const checkToken = (req: Request, res: Response, next: NextFunction) => {
 
   if (token !== expectedToken) {
     return res.sendStatus(403); // If token doesn't match, return 403 Forbidden
-  } */
+  }
 
   next(); // If token matches, proceed to the next middleware or route handler
 };
