@@ -5,9 +5,6 @@ import * as config from "../util/config";
 import * as newApi from "../api/newApi";
 
 const checkToken = (req: Request, res: Response, next: NextFunction) => {
-  if (true) {
-    return next(); // TODO: TMP.
-  }
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Extract the token
 
