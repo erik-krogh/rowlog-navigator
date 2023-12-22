@@ -60,30 +60,30 @@ components:
     Trip:
       type: object
       required:
-        - i
-        - d
-        - t
-        - b
-        - l
-        - p
+        - description
+        - dist
+        - startTime
+        - boatName
+        - longTrip
+        - participants
       properties:
-        i:
+        description:
           type: string
           description: A textual description of the trip.
-        d:
+        dist:
           type: string
           description: The distance rowed.
-        t:
+        startTime:
           type: string
           format: date-time
           description: The date and time of the trip.
-        b:
+        boatName:
           type: string
           description: The name of the boat.
-        l:
+        longTrip:
           type: boolean
           description: Whether the trip is a long trip. (A trip outside of our daily waters.)
-        p:
+        participants:
           type: array
           description: The IDs of the members who participated in the trip.
           items:

@@ -5,7 +5,9 @@ import * as config from "../util/config";
 import * as newApi from "../api/newApi";
 
 const checkToken = (req: Request, res: Response, next: NextFunction) => {
-  console.log(JSON.stringify(req.headers, null, 2));
+  if (true) {
+    return next(); // TODO: TMP.
+  }
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Extract the token
 
@@ -32,11 +34,12 @@ router.get("/trips", checkToken, async (req, res) => {
 
     const respTrips = trips.map((trip) => {
       return {
-        i: trip.description,
-        t: trip.startDateTime,
-        d: trip.distance,
-        b: trip.boatName,
-        p: trip.participants.map((p) => {
+        description: trip.description,
+        startTime: trip.startDateTime,
+        dist: trip.distance,
+        boatName: trip.boatName,
+        longTrip: trip.longtrip,
+        participants: trip.participants.map((p) => {
           return p.id;
         }),
       };
