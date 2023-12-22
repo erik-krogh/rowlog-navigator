@@ -69,9 +69,6 @@ router.get("/members/:id", async (req, res) => {
 
     return res.status(200).json({
       id: member.id,
-      username: member.username,
-      firstName: member.firstName,
-      lastName: member.lastName,
       name: member.name,
       email: member.email,
     });
@@ -81,7 +78,6 @@ router.get("/members/:id", async (req, res) => {
     res.status(500).send("Failed to get member");
   }
 });
-
 
 // Export the router
 export default router;

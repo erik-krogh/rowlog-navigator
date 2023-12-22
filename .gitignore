@@ -8,4 +8,5 @@ work/
 test/sources/**/*.class
 work-cache/
 config.json
+**/.DS_Store
 backup/
