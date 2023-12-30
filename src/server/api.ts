@@ -51,7 +51,7 @@ router.get("/trips", checkToken, async (req, res) => {
 });
 
 // Get a member by ID
-router.get("/members/:id", async (req, res) => {
+router.get("/member/:id", async (req, res) => {
   try {
     const memberId = Number(req.params.id); // Get the value of the 'id' path parameter
     console.log(`Fetching member with ID ${memberId}...`);
@@ -73,6 +73,32 @@ router.get("/members/:id", async (req, res) => {
     console.error("Failed to get member");
     console.error(e);
     res.status(500).send("Failed to get member");
+  }
+});
+
+router.get("/members", async (req, res) => {
+  try {
+    const members = await newApi.members();
+    let ids = req.query.ids as string;
+    if (!ids.startsWith("[")) {
+      ids = "[" + ids + "]";
+    }
+    const memberIds = JSON.parse(ids as string) as number[];
+
+    const respMembers = memberIds.map((id) => {
+      const member = members.getMember(id);
+      return {
+        id: member.id,
+        name: member.name,
+        email: member.email,
+      };
+    });
+
+    res.json(respMembers);
+  } catch (e) {
+    console.error("Failed to get members");
+    console.error(e);
+    res.status(500).send("Failed to get members");
   }
 });
 

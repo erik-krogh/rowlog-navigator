@@ -29,7 +29,7 @@ paths:
             application/json:    
               schema:
                 $ref: "#/components/schemas/Trip"
-  /members/{id}:
+  /member/{id}:
     get:
       summary: Get a member by ID
       operationId: getMemberById
@@ -52,7 +52,30 @@ paths:
                 $ref: "#/components/schemas/Member"
         '404':
           description: Member not found.
-
+  /members:
+    get:
+      summary: Get multiple members by IDs
+      operationId: getMembersByIds
+      tags:
+        - members
+      parameters:
+        - name: ids
+          in: query
+          description: The IDs of the members to retrieve, separated by commas.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: An array of member objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Member"
+        '404':
+          description: Members not found.
 components:
   schemas:
     Trip:
