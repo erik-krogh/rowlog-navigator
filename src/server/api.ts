@@ -26,8 +26,19 @@ router.get("/trips", checkToken, async (req, res) => {
   try {
     const season = req.query.season; // Get the value of the 'season' query parameter
     console.log(`Fetching trips for season ${season}...`);
-
+    
     const trips = (await newApi.trips(Number(season))).getTrips();
+    
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : null;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : null;
+    if (startDate) {
+      trips.filter((t) => t.startDateTime >= startDate);
+      console.log(`Filtering trips with start date ${startDate}...`);
+    }
+    if (endDate) {
+      trips.filter((t) => t.startDateTime <= endDate);
+      console.log(`Filtering trips with end date ${endDate}...`);
+    }
 
     const respTrips = trips.map((trip) => {
       return {
