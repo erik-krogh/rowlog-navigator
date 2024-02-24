@@ -51,7 +51,7 @@ async function boatPartner(data: api.TripData) {
       }
       rowers.set(
         participant.id,
-        (rowers.get(participant.id) || 0) + trip.distance
+        (rowers.get(participant.id) || 0) + trip.distance,
       );
     });
   });

@@ -57,7 +57,7 @@ export async function exportMembers() {
       .map((p) => (perms.includes(p) ? "X" : ""))
       .join("\t");
     console.log(
-      `${member.id}	${member.firstName}	${member.lastName}\t${permsString}`
+      `${member.id}	${member.firstName}	${member.lastName}\t${permsString}`,
     );
   }
 
@@ -75,7 +75,7 @@ export async function searchForMember(): Promise<void> {
         message: member.name + colors.dim(" (" + member.id + ")"),
         hint: member.email,
       };
-    })
+    }),
   );
 
   const member = members.getMember(Number(rawAnswer));
@@ -93,7 +93,7 @@ async function showMemberDetails(member: api.Member) {
     "Tags: " +
       (await api.MemberData.getTagsForMember(member))
         .map((p) => p.displayName)
-        .join(", ")
+        .join(", "),
   );
 
   return await promptAfterDetails(member);

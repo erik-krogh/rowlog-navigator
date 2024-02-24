@@ -47,7 +47,7 @@ async function searchTrips() {
           "km " +
           trip.startDateTime,
       };
-    })
+    }),
   );
 
   const trip = trips.getTrips()[parseInt(rawAnswer)];

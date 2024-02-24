@@ -27,7 +27,10 @@ export function ensureDirExists(dir: string): void {
 export default class Cache {
   private cache?: Map<string, string>;
   private getter: (key: string) => Promise<string>;
-  constructor(private key: string, getter: (key: string) => Promise<string>) {
+  constructor(
+    private key: string,
+    getter: (key: string) => Promise<string>,
+  ) {
     // running at most 100 requests every second in an attempt to avoid secondary rate limits.
     this.getter = throttle(getter, 100, 10); // trying to get an even stream, by sending 10 every 100ms.
   }
@@ -91,7 +94,7 @@ export default class Cache {
 export function throttle(
   f: (key: string) => Promise<string>,
   wait: number,
-  parallism: number
+  parallism: number,
 ): (key: string) => Promise<string> {
   let queue: [string, (resolved: string) => void, (reject: any) => void][] = [];
   let lastInvocation: number | null = null;
@@ -128,9 +131,12 @@ export function throttle(
         });
       } else {
         return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            run(key).then(resolve, reject);
-          }, wait - (Date.now() - lastInvocation));
+          setTimeout(
+            () => {
+              run(key).then(resolve, reject);
+            },
+            wait - (Date.now() - lastInvocation),
+          );
         });
       }
     }

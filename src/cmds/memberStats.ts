@@ -81,7 +81,7 @@ async function community(data: api.TripData): Promise<void> {
 
   // sort and print
   const sorted = Array.from(rowers.entries()).sort(
-    (a, b) => b[1].size - a[1].size
+    (a, b) => b[1].size - a[1].size,
   );
 
   sorted.forEach(([id, rowers]) => {
@@ -90,7 +90,7 @@ async function community(data: api.TripData): Promise<void> {
         rowers.size
       } andre roere, heraf ${
         Array.from(rowers).filter(isRabbit).length
-      } kaniner`
+      } kaniner`,
     );
   });
 
@@ -131,7 +131,7 @@ async function mostCommon(data: api.TripData): Promise<void> {
     const rower1Details = members.getMember(+rower1);
     const rower2Details = members.getMember(+rower2);
     console.log(
-      `${rower1Details.name} (${rower1}) og ${rower2Details.name} (${rower2}) har roet ${distance} km`
+      `${rower1Details.name} (${rower1}) og ${rower2Details.name} (${rower2}) har roet ${distance} km`,
     );
   });
 
@@ -151,7 +151,7 @@ async function partners(data: api.TripData): Promise<void> {
       if (participant.id !== rower.id) {
         partners.set(
           participant.id,
-          (partners.get(participant.id) || 0) + trip.distance
+          (partners.get(participant.id) || 0) + trip.distance,
         );
       }
     });
@@ -163,7 +163,7 @@ async function partners(data: api.TripData): Promise<void> {
   const sorted = Array.from(partners.entries()).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, distance]) => {
     console.log(
-      members.getMember(id).name + " (" + id + ") | " + +distance + " km"
+      members.getMember(id).name + " (" + id + ") | " + +distance + " km",
     );
   });
 
@@ -181,7 +181,7 @@ async function tours(data: api.TripData) {
         message: member.name + colors.dim(" (" + member.id + ")"),
         hint: member.email,
       };
-    })
+    }),
   );
 
   const member = members.getMember(Number(rawAnswer));
@@ -218,7 +218,7 @@ async function distance(data: api.TripData) {
 
       distMap.set(
         participant.id,
-        (distMap.get(participant.id) || 0) + trip.distance
+        (distMap.get(participant.id) || 0) + trip.distance,
       );
     });
   });

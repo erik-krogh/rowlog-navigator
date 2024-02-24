@@ -57,7 +57,7 @@ async function tour() {
     0,
     0,
     0,
-    0
+    0,
   );
   await printTourStats(currentMonth);
   await printTourStats(goBackOneMonth(currentMonth));
@@ -68,8 +68,8 @@ async function tour() {
     const fromDate = goBackOneMonth(toDate);
     console.log(
       colors.bold(
-        `Tour stats fra ${toPrettyDate(fromDate)} til ${toPrettyDate(toDate)}`
-      )
+        `Tour stats fra ${toPrettyDate(fromDate)} til ${toPrettyDate(toDate)}`,
+      ),
     );
     const trips = (await api.trips()).getTrips().filter((trip) => {
       const t = trip.startDateTime;
@@ -82,7 +82,7 @@ async function tour() {
     function printStat(
       color: string,
       stat: string,
-      metric: Map<number, number>
+      metric: Map<number, number>,
     ) {
       if (metric.size === 0) {
         console.log(`${color}: Ingen ture`);
@@ -96,7 +96,7 @@ async function tour() {
           const member = members.getMember(mem[0]);
           if (member) {
             console.log(
-              `${color}: ${member.name} (${member.id}): ${mem[1]} ${stat}`
+              `${color}: ${member.name} (${member.id}): ${mem[1]} ${stat}`,
             );
           } else {
             console.log(`${color}: gæst? ${mem[0]}: ${mem[1]} ${stat}`);
@@ -293,7 +293,7 @@ async function generalforsamling() {
             "No details for " +
               participant.id +
               " internal: " +
-              participant.internalId
+              participant.internalId,
           );
           continue;
         }
@@ -322,14 +322,14 @@ async function generalforsamling() {
     console.log("Båd km:");
     // sort first
     const sortedBoatGrouping = Array.from(boatGrouping.entries()).sort(
-      (a, b) => b[1] - a[1]
+      (a, b) => b[1] - a[1],
     );
     for (const [boat, value] of sortedBoatGrouping) {
       console.log(boat + ": " + value + " km");
     }
     console.log("Båd ture:");
     const sortedTripGrouping = Array.from(tripGrouping.entries()).sort(
-      (a, b) => b[1] - a[1]
+      (a, b) => b[1] - a[1],
     );
     for (const [boat, value] of sortedTripGrouping) {
       console.log(boat + ": " + value + " ture");

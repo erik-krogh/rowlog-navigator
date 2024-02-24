@@ -43,7 +43,7 @@ router.get("/trips", checkToken, async (req, res) => {
       // making sure the endDate is inclusive, so we add a day
       trips.filter(
         (t) =>
-          t.startDateTime <= new Date(endDate.getTime() + 24 * 60 * 60 * 1000)
+          t.startDateTime <= new Date(endDate.getTime() + 24 * 60 * 60 * 1000),
       );
       console.log(`Filtering trips with end date ${endDate}...`);
     }

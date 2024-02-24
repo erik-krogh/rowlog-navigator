@@ -15,7 +15,7 @@ app.use(express.static("public", { dotfiles: "allow" }));
 const requestLogin = (
   req: ExpressStatic.Request,
   res: ExpressStatic.Response,
-  next: ExpressStatic.NextFunction
+  next: ExpressStatic.NextFunction,
 ) => {
   if (!req.headers || !req.headers.authorization) {
     res.status(401).send("Unauthorized");
@@ -84,15 +84,15 @@ app.post("/permissions", (req, res) => {
 // Certificate
 const privateKey = fs.readFileSync(
   "/etc/letsencrypt/live/asr1.webbies.dk/privkey.pem",
-  "utf8"
+  "utf8",
 );
 const certificate = fs.readFileSync(
   "/etc/letsencrypt/live/asr1.webbies.dk/cert.pem",
-  "utf8"
+  "utf8",
 );
 const ca = fs.readFileSync(
   "/etc/letsencrypt/live/asr1.webbies.dk/chain.pem",
-  "utf8"
+  "utf8",
 );
 
 const credentials = {

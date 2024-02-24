@@ -7,7 +7,7 @@ import { createInMemoryCache } from "../util/inMemoryCache.js";
 export function auth() {
   const config = getConfig();
   return Buffer.from(`${config.USER_NAME}:${config.PASSWORD}`).toString(
-    "base64"
+    "base64",
   );
 }
 
@@ -58,7 +58,7 @@ type RawMemberRow = [
   string, // frigivet dato (dd-mm-yyyy)
   string, // antal login (stringified number)
   string, // online sidst (dd-mm-yyyy)
-  string // rettigheder (tags), TagXYZ,TagABC,TagDEF
+  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF
 ];
 
 export type Member = {
@@ -145,7 +145,7 @@ export class MemberData {
   getMemberByName(name: string): Member {
     name = name.replace(/\s+/g, " ").trim();
     return this.members.find(
-      (member) => member.name.replace(/\s+/g, " ").trim() === name
+      (member) => member.name.replace(/\s+/g, " ").trim() === name,
     );
   }
 
@@ -168,7 +168,7 @@ export class MemberData {
 }
 
 const detailsCache = createInMemoryCache<Record<string, string>>(
-  60 * 60 * 1000
+  60 * 60 * 1000,
 );
 
 type FormItem = {
@@ -177,7 +177,7 @@ type FormItem = {
 };
 
 export async function getMemberDetails(
-  member: Member
+  member: Member,
 ): Promise<Record<string, string>> {
   const id = member.internalId;
 
@@ -245,7 +245,7 @@ export const tags: () => Promise<Record<string, TagData>> = util.cache(
   async () => {
     return await fetchRawTags();
   },
-  60 * 60
+  60 * 60,
 );
 
 type RawTrip = {
@@ -265,7 +265,7 @@ const getRawTrips = util.cache(async () => {
       await got.get(url, {
         headers: await authHeader(),
       })
-    ).body
+    ).body,
   ).data;
 
   return rawData;
@@ -283,7 +283,7 @@ export type Trip = {
 const tripsCache = createInMemoryCache<TripData>(60 * 60 * 1000);
 
 export function trips(
-  season: number = currentSeason.getCurrentSeason()
+  season: number = currentSeason.getCurrentSeason(),
 ): Promise<TripData> {
   return tripsCache.getOrSet(season + "", async () => {
     if (!currentSeason.POSSIBLE_SEAONS.includes(season)) {
@@ -321,7 +321,7 @@ export function trips(
     trips = trips.filter((t) => t.startDateTime < new Date(season + "-11-01"));
     // everything before first of november previous year is in the previous season.
     trips = trips.filter(
-      (t) => t.startDateTime >= new Date(season - 1 + "-11-01")
+      (t) => t.startDateTime >= new Date(season - 1 + "-11-01"),
     );
 
     return new TripData(trips);
@@ -345,7 +345,7 @@ export class TripData {
 
   getAllTripsForRower(rowerId: number): Trip[] {
     return this.trips.filter((trip) =>
-      trip.participants.some((p) => p.id === rowerId)
+      trip.participants.some((p) => p.id === rowerId),
     );
   }
 

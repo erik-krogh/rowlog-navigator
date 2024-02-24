@@ -15,7 +15,7 @@ export async function promptRower(ids?: number[]): Promise<api.Member> {
           name: m.id + "",
           message: colors.bold(m.name) + " (" + m.id + ")",
         };
-      })
+      }),
   );
   return members.getMember(+rowerSelection);
 }

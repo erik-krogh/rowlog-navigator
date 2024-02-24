@@ -7,7 +7,7 @@ const seenAndHandlesTables = new Set();
 var observer = new MutationObserver(function (mutations) {
   // find potential table to fill in.
   const table = $(
-    ".modal-container .modal-content .modal-body table.table-borderless"
+    ".modal-container .modal-content .modal-body table.table-borderless",
   );
   // the table header (<thread>) needs to have 3 elements: "Navn", "Antal", "".
   const children = table
@@ -63,7 +63,7 @@ var observer = new MutationObserver(function (mutations) {
       table.find("tbody tr").each(function (i, e) {
         $(e).children().eq(1).text(permissions[i]);
       });
-    }
+    },
   );
 });
 
