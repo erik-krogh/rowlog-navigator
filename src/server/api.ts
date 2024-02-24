@@ -22,10 +22,11 @@ const checkToken = (req: Request, res: Response, next: NextFunction) => {
 };
 
 // trips.
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.get("/trips", checkToken, async (req, res) => {
   try {
     const season = req.query.season; // Get the value of the 'season' query parameter
-    console.log(`Fetching trips for season ${season}...`);
+    console.log(`Fetching trips for season ${JSON.stringify(season)}...`);
 
     const trips = (await newApi.trips(Number(season))).getTrips();
 

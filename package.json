@@ -5,7 +5,7 @@
   "main": "dist/src/main.js",
   "type": "module",
   "scripts": {
-    "test": "npx jest",
+    "test": "npx mocha --forbid-only test/*.ts",
     "build": "npx tsc",
     "lint": "npx eslint src test",
     "format": "npx prettier -w .",
@@ -28,16 +28,16 @@
   "devDependencies": {
     "@types/app-root-path": "^1.2.8",
     "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.12",
     "@types/lodash.merge": "^4.6.9",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.20",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "jest": "^29.7.0",
+    "mocha": "^10.3.0",
     "prettier": "^3.2.5",
-    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
 }
