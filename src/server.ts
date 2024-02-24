@@ -10,7 +10,7 @@ import fs from "fs";
 // start the server
 const app = express();
 
-app.use(express.static("public", { dotfiles: 'allow' }));
+app.use(express.static("public", { dotfiles: "allow" }));
 
 const requestLogin = async (
   req: ExpressStatic.Request,
@@ -37,25 +37,27 @@ app.get("/events", requestLogin, (_req, res) => {
 
 import { permissionMap } from "./cmds/members";
 
-const allPermissions = util.cache(
-  async () => {
-    const members = await api.members();
-    const permissions: Record<string, string> = {};
-    const tags = await api.tags();
-    for (const member of members.getAllMembers()) {
-      let perms = member.permissions.map((p) => {
+const allPermissions = util.cache(async () => {
+  const members = await api.members();
+  const permissions: Record<string, string> = {};
+  const tags = await api.tags();
+  for (const member of members.getAllMembers()) {
+    let perms = member.permissions
+      .map((p) => {
         const tag = tags[p];
-        return permissionMap[tag.name.trim() as keyof typeof permissionMap] || null;
-      }).filter((p) => p !== null);
+        return (
+          permissionMap[tag.name.trim() as keyof typeof permissionMap] || null
+        );
+      })
+      .filter((p) => p !== null);
 
-      // dedup
-      perms = [...new Set(perms)];
+    // dedup
+    perms = [...new Set(perms)];
 
-      permissions[member.name] = perms.join("");
-    }
-    return permissions;
-  }, 60 * 60);
-
+    permissions[member.name] = perms.join("");
+  }
+  return permissions;
+}, 60 * 60);
 
 app.post("/permissions", async (req, res) => {
   // the request body contains a JSON array of names, and we respond with a corresponding JSON array of permissions.
@@ -71,7 +73,7 @@ app.post("/permissions", async (req, res) => {
     // remove duplicate spaces in the names
     names = names.map((n) => n.replace(/\s+/g, " ").trim());
 
-    const result : string[] = names.map((n) => allPerms[n] || "");
+    const result: string[] = names.map((n) => allPerms[n] || "");
     res.header("Access-Control-Allow-Origin", "*");
     res.status(200).send(JSON.stringify(result));
   });
@@ -92,21 +94,29 @@ app.get(/events\d*\.ics/, async (req, res) => {
 });
 
 // Certificate
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/asr1.webbies.dk/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/asr1.webbies.dk/cert.pem', 'utf8');
-const ca = fs.readFileSync('/etc/letsencrypt/live/asr1.webbies.dk/chain.pem', 'utf8');
+const privateKey = fs.readFileSync(
+  "/etc/letsencrypt/live/asr1.webbies.dk/privkey.pem",
+  "utf8"
+);
+const certificate = fs.readFileSync(
+  "/etc/letsencrypt/live/asr1.webbies.dk/cert.pem",
+  "utf8"
+);
+const ca = fs.readFileSync(
+  "/etc/letsencrypt/live/asr1.webbies.dk/chain.pem",
+  "utf8"
+);
 
 const credentials = {
-	key: privateKey,
-	cert: certificate,
-	ca: ca
+  key: privateKey,
+  cert: certificate,
+  ca: ca,
 };
 
 import API from "./server/api";
 
 // Mount the API router at /api/ endpoints
 app.use("/api", API);
-
 
 // start the server
 https.createServer(credentials, app).listen(9001, () => {

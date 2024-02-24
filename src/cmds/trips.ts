@@ -93,7 +93,6 @@ async function popularTrips() {
   const tripCounter = new Map<string, number>(); // routeName -> count
   const distCounter = new Map<string, number>(); // routeName -> distance
 
-
   trips.getTrips().forEach((trip) => {
     const name = trip.description;
     tripCounter.set(name, (tripCounter.get(name) || 0) + 1);

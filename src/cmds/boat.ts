@@ -38,17 +38,15 @@ export async function run(): Promise<void> {
 async function boatPartner(data: api.TripData) {
   const rowers = new Map<number, number>(); // rower -> distance
 
-  const boatSelection = await prompt.ask(
-    "Select boat",
-    data.getAllBoatNames()
-  );
+  const boatSelection = await prompt.ask("Select boat", data.getAllBoatNames());
 
   data.getTrips().forEach((trip) => {
     if (trip.boatName !== boatSelection) {
       return;
     }
     trip.participants.forEach((participant) => {
-      if (!participant.id) { // TODO: does this happen?
+      if (!participant.id) {
+        // TODO: does this happen?
         return; // guest
       }
       rowers.set(

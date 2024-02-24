@@ -31,7 +31,7 @@ export async function run(): Promise<void> {
       return await generalforsamling();
     case "back":
       return await (await import("../main")).mainPrompt();
-    
+
     default:
       throw new Error("Unknown answer");
   }
@@ -79,11 +79,17 @@ async function tour() {
 
     console.log("Baseret på " + trips.length + " ture");
 
-    function printStat(color: string, stat: string, metric: Map<number, number>) {
+    function printStat(
+      color: string,
+      stat: string,
+      metric: Map<number, number>
+    ) {
       if (metric.size === 0) {
         console.log(`${color}: Ingen ture`);
       } else {
-        const sorted = Array.from(metric.entries()).filter(a => a[0] !== 0).sort((a, b) => b[1] - a[1]);
+        const sorted = Array.from(metric.entries())
+          .filter((a) => a[0] !== 0)
+          .sort((a, b) => b[1] - a[1]);
         const maxScore = sorted[0][1];
         const hasMaxScore = sorted.filter((x) => x[1] === maxScore);
         for (const mem of hasMaxScore) {
@@ -93,11 +99,8 @@ async function tour() {
               `${color}: ${member.name} (${member.id}): ${mem[1]} ${stat}`
             );
           } else {
-            console.log(
-              `${color}: gæst? ${mem[0]}: ${mem[1]} ${stat}`
-            ); 
+            console.log(`${color}: gæst? ${mem[0]}: ${mem[1]} ${stat}`);
           }
-          
         }
       }
     }
@@ -134,9 +137,7 @@ async function tour() {
     {
       const map: Map<number, number> = new Map(); // memberId -> distance
       for (const trip of trips) {
-        if (
-          trip.longtrip
-        ) {
+        if (trip.longtrip) {
           for (const participant of trip.participants) {
             const distance = map.get(participant.id) || 0;
             map.set(participant.id, distance + (trip.distance || 0));
@@ -214,10 +215,7 @@ async function brabrand() {
   for (const trip of (await api.trips()).getTrips()) {
     if (brabrandFilter(trip)) {
       for (const participant of trip.participants) {
-        map.set(
-          participant.id,
-          (map.get(participant.id) || 0) + trip.distance
-        );
+        map.set(participant.id, (map.get(participant.id) || 0) + trip.distance);
       }
     }
   }
@@ -277,7 +275,6 @@ async function generalforsamling() {
     console.log("Total langturs båd km: " + totalLongTripBoatKM);
     console.log("Total langturs person km: " + totalLongTripPersonKM);
     console.log("Antal aktive roere: " + totalActive.size);
-
   }
 
   {
@@ -293,11 +290,16 @@ async function generalforsamling() {
         }
         const details = await api.getMemberDetails(participant);
         if (details === undefined) {
-          console.log("No details for " + participant.id + " internal: " + participant.internalId);
+          console.log(
+            "No details for " +
+              participant.id +
+              " internal: " +
+              participant.internalId
+          );
           continue;
         }
         const gender = details.Gender;
-        genderGrouping.set(gender, (genderGrouping.get(gender)  || 0) + dist);
+        genderGrouping.set(gender, (genderGrouping.get(gender) || 0) + dist);
       }
     }
 
@@ -320,12 +322,16 @@ async function generalforsamling() {
 
     console.log("Båd km:");
     // sort first
-    const sortedBoatGrouping = Array.from(boatGrouping.entries()).sort((a, b) => b[1] - a[1]);
+    const sortedBoatGrouping = Array.from(boatGrouping.entries()).sort(
+      (a, b) => b[1] - a[1]
+    );
     for (const [boat, value] of sortedBoatGrouping) {
       console.log(boat + ": " + value + " km");
     }
     console.log("Båd ture:");
-    const sortedTripGrouping = Array.from(tripGrouping.entries()).sort((a, b) => b[1] - a[1]);
+    const sortedTripGrouping = Array.from(tripGrouping.entries()).sort(
+      (a, b) => b[1] - a[1]
+    );
     for (const [boat, value] of sortedTripGrouping) {
       console.log(boat + ": " + value + " ture");
     }

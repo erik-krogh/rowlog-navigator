@@ -20,7 +20,7 @@ export async function promptRower(ids?: number[]): Promise<api.Member> {
   return members.getMember(+rowerSelection);
 }
 
-let lastInvalidation : Date | undefined;
+let lastInvalidation: Date | undefined;
 export function invalidateCaches() {
   lastInvalidation = new Date();
 }
@@ -29,7 +29,7 @@ export function invalidateCaches() {
 export function cache<T>(getter: () => T, seconds: number) {
   let value: T | undefined;
   let expires: number | undefined;
-  let lastRefresh : Date | undefined;
+  let lastRefresh: Date | undefined;
   return () => {
     if (lastInvalidation && (!lastRefresh || lastRefresh < lastInvalidation)) {
       value = undefined;

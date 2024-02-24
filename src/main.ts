@@ -42,7 +42,7 @@ export async function mainPrompt() {
     },
     {
       name: "the-board",
-      message: "Statestik til bestyrelsen"
+      message: "Statestik til bestyrelsen",
     },
     {
       name: "change-season",

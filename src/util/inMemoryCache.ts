@@ -1,4 +1,3 @@
-
 interface CacheEntry<T> {
   value: T;
   expiration: number;

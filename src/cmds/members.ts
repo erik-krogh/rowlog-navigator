@@ -19,24 +19,24 @@ export async function run(): Promise<void> {
 }
 
 export const permissionMap = {
-  "Coastal": "Cx",
-  "Friroet": "R",
-  "Roret": "R",
-  "Instruktør": "I",
+  Coastal: "Cx",
+  Friroet: "R",
+  Roret: "R",
+  Instruktør: "I",
   "Instruktør Sculler": "IS",
-  "K1": "K1",
-  "K2": "K2",
-  "K3": "K3",
+  K1: "K1",
+  K2: "K2",
+  K3: "K3",
   "Kortturs styrmand": "K1",
   "Langturs styrmand": "L",
-  "Langturstyrmand": "L",
-  "S": "S",
-  "S1": "S1",
-  "S2": "S2",
-  "Svømmeprøve": "SW",
-  "Vinterstyrmandsret": "V",
-  "Under Instruktion": "UI"
-}
+  Langturstyrmand: "L",
+  S: "S",
+  S1: "S1",
+  S2: "S2",
+  Svømmeprøve: "SW",
+  Vinterstyrmandsret: "V",
+  "Under Instruktion": "UI",
+};
 
 export async function exportMembers() {
   const members = (await api.members()).getAllMembers();
@@ -44,11 +44,18 @@ export async function exportMembers() {
   console.log("MemberNumber	FirstName	LastName	UI	R	K1	K2	K3	L	I	S	S1	S2	Cx	IS	SW");
   const tags = await api.tags();
   for (const member of members) {
-    let perms = member.permissions.map((p: string) => {
-      const tag = tags[p as any];
-      return permissionMap[tag.name.trim() as keyof typeof permissionMap] || null;
-    }).filter((p) => p !== null);
-    let permsString = "UI	R	K1	K2	K3	L	I	S	S1	S2	Cx	IS	SW".split("\t").map((p) => perms.includes(p) ? "X" : "").join("\t");
+    let perms = member.permissions
+      .map((p: string) => {
+        const tag = tags[p as any];
+        return (
+          permissionMap[tag.name.trim() as keyof typeof permissionMap] || null
+        );
+      })
+      .filter((p) => p !== null);
+    let permsString = "UI	R	K1	K2	K3	L	I	S	S1	S2	Cx	IS	SW"
+      .split("\t")
+      .map((p) => (perms.includes(p) ? "X" : ""))
+      .join("\t");
     console.log(
       `${member.id}	${member.firstName}	${member.lastName}\t${permsString}`
     );
@@ -82,7 +89,12 @@ async function showMemberDetails(member: api.Member) {
   // birthdate. As dd/mm/yyyy
   console.log(`Fødselsdag: ${toPrettyDate(member.birthday)}`);
 
-  console.log("Tags: " + (await api.MemberData.getTagsForMember(member)).map(p => p.displayName).join(", "));
+  console.log(
+    "Tags: " +
+      (await api.MemberData.getTagsForMember(member))
+        .map((p) => p.displayName)
+        .join(", ")
+  );
 
   return await promptAfterDetails(member);
 }

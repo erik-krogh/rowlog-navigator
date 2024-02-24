@@ -287,7 +287,9 @@ export type Trip = {
 
 const tripsCache = createInMemoryCache<TripData>(60 * 60 * 1000);
 
-export function trips(season: number = currentSeason.getCurrentSeason()): Promise<TripData> {
+export function trips(
+  season: number = currentSeason.getCurrentSeason()
+): Promise<TripData> {
   return tripsCache.getOrSet(season + "", async () => {
     if (!currentSeason.POSSIBLE_SEAONS.includes(season)) {
       throw new Error("Invalid season: " + season);
