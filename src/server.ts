@@ -35,24 +35,7 @@ app.get("/events", requestLogin, (_req, res) => {
   res.status(500).end("Not implemented");
 });
 
-const permissionMap = {
-  "Coastal": "Cx",
-  "Friroet": "R",
-  "Roret": "R",
-  "Instruktør": "I",
-  "Instruktør Sculler": "IS",
-  "K1": "K1",
-  "K2": "K2",
-  "K3": "K3",
-  "Kortturs styrmand": "K1",
-  "Langturs styrmand": "L",
-  "Langturstyrmand": "L",
-  "S": "S",
-  "S1": "S1",
-  "S2": "S2",
-  "Svømmeprøve": "SW",
-  "Vinterstyrmandsret": "V",
-}
+import { permissionMap } from "./cmds/members";
 
 const allPermissions = util.cache(
   async () => {
