@@ -2,7 +2,7 @@ import * as express from "express";
 import { Request, Response, NextFunction } from "express";
 const router = express.Router();
 import * as config from "../util/config";
-import * as newApi from "../api/newApi";
+import * as newApi from "../api/rokort";
 
 const checkToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];

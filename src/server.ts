@@ -1,6 +1,6 @@
 // a server that constantly refreshes the cache of activities.
 import express from "express";
-import * as api from "./api/newApi";
+import * as api from "./api/rokort";
 import type * as ExpressStatic from "express-serve-static-core";
 import * as util from "./util/rowerutils";
 import https from "https";

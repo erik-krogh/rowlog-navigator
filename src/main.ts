@@ -14,21 +14,10 @@ export async function run(): Promise<void> {
     config.mergeConfig({
       USER_NAME: await prompt.ask("Brugernavn"),
       PASSWORD: await prompt.ask("Kodeord"),
-      SITE_ID: await prompt.ask("Site ID (ASR = 159)"),
     });
   }
 
-  populateCaches();
-
   return await mainPrompt();
-}
-
-function populateCaches() {
-  // TODO: Do something here again.
-  /* void api.trips(); // async fetching to speed up first request.
-  void eventFetcher.saveCurrentEvents(); // saving current events, so we don't miss when they are deleted.
-  void eventFetcher.events(); // populating events cache.
-  void api.members(); // populating members cache. */
 }
 
 void run();
@@ -47,10 +36,6 @@ export async function mainPrompt() {
       name: "members",
       message: "Medlemsdatabasen",
     },
-    /* { // TODO: Implement events
-      name: "events",
-      message: "Aktiviteter",
-    }, */
     {
       name: "trips",
       message: "Roprotokolen",
@@ -81,8 +66,6 @@ export async function mainPrompt() {
       return await (await import("./cmds/memberStats")).run();
     case "members":
       return await (await import("./cmds/members")).run();
-    case "events":
-      return await (await import("./cmds/events")).run();
     case "trips":
       return await (await import("./cmds/trips")).run();
     case "the-board":
@@ -110,13 +93,11 @@ async function changeSeason(): Promise<void> {
 
   currentSeason.changeCurrentSeason(+answer);
   invalidateCaches();
-  populateCaches();
   return await mainPrompt();
 }
 
 async function clearAllCaches(): Promise<void> {
   invalidateCaches();
   fs.unlinkSync(path.join(appRoot.path, "work-cache", "fetchTrips.cache"));
-  populateCaches();
   return await mainPrompt();
 }

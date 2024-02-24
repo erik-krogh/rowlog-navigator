@@ -1,6 +1,6 @@
 import * as prompt from "../prompt";
 import * as colors from "ansi-colors";
-import * as api from "../api/newApi";
+import * as api from "../api/rokort";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvad vil du?", [

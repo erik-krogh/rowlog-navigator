@@ -1,5 +1,5 @@
 import * as prompt from "../prompt";
-import * as api from "../api/newApi";
+import * as api from "../api/rokort";
 import { promptRower } from "../util/rowerutils";
 
 export async function run(): Promise<void> {

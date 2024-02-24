@@ -1,8 +1,4 @@
 import got from "got";
-import * as cherrio from "cheerio";
-import appRoot from "app-root-path";
-import * as path from "path";
-import * as fs from "fs";
 import * as util from "../util/rowerutils";
 import { getConfig } from "../util/config";
 import * as currentSeason from "../util/currentSeason";

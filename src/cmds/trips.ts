@@ -1,5 +1,5 @@
 import * as prompt from "../prompt";
-import * as api from "../api/newApi";
+import * as api from "../api/rokort";
 import colors from "ansi-colors";
 
 export async function run(): Promise<void> {
