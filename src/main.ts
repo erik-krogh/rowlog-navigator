@@ -1,11 +1,11 @@
-import * as prompt from "./prompt";
+import * as prompt from "simple-cli-prompter";
 import colors from "ansi-colors";
-import * as config from "./util/config";
-import { invalidateCaches } from "./util/rowerutils";
+import * as config from "./util/config.js";
+import { invalidateCaches } from "./util/rowerutils.js";
 import * as fs from "fs";
 import * as path from "path";
 import appRoot from "app-root-path";
-import * as currentSeason from "./util/currentSeason";
+import * as currentSeason from "./util/currentSeason.js";
 
 export async function run(): Promise<void> {
   console.log("Velkommen til " + colors.green.bold("Rokort stats!"));
@@ -61,15 +61,15 @@ export async function mainPrompt() {
 
   switch (category) {
     case "boat":
-      return await (await import("./cmds/boat")).run();
+      return await (await import("./cmds/boat.js")).run();
     case "member-stats":
-      return await (await import("./cmds/memberStats")).run();
+      return await (await import("./cmds/memberStats.js")).run();
     case "members":
-      return await (await import("./cmds/members")).run();
+      return await (await import("./cmds/members.js")).run();
     case "trips":
-      return await (await import("./cmds/trips")).run();
+      return await (await import("./cmds/trips.js")).run();
     case "the-board":
-      return await (await import("./cmds/theBoard")).run();
+      return await (await import("./cmds/theBoard.js")).run();
     case "change-season":
       return await changeSeason();
     case "clear-caches":

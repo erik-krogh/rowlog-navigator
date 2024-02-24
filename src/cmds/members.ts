@@ -1,6 +1,6 @@
-import * as prompt from "../prompt";
+import * as prompt from "simple-cli-prompter";
 import colors from "ansi-colors";
-import * as api from "../api/rokort";
+import * as api from "../api/rokort.js";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvad vil du?", [
@@ -14,7 +14,7 @@ export async function run(): Promise<void> {
   } else if (answer === "Eksporter medlemsdata") {
     return await exportMembers();
   } else if (answer === "Tilbage") {
-    return await (await import("../main")).mainPrompt();
+    return await (await import("../main.js")).mainPrompt();
   }
 }
 
@@ -116,7 +116,7 @@ async function promptAfterDetails(member: api.Member): Promise<void> {
       console.log(JSON.stringify(member.raw, null, 2));
       return await promptAfterDetails(member);
     case "Tilbage":
-      return await (await import("../main")).mainPrompt();
+      return await run();
     default:
       throw new Error("Unknown answer");
   }

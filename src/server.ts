@@ -1,8 +1,8 @@
 // a server that constantly refreshes the cache of activities.
 import express from "express";
-import * as api from "./api/rokort";
+import * as api from "./api/rokort.js";
 import type * as ExpressStatic from "express-serve-static-core";
-import * as util from "./util/rowerutils";
+import * as util from "./util/rowerutils.js";
 import https from "https";
 import http from "http";
 import fs from "fs";
@@ -35,7 +35,7 @@ app.get("/events", requestLogin, (_req, res) => {
   res.status(500).end("Not implemented");
 });
 
-import { permissionMap } from "./cmds/members";
+import { permissionMap } from "./cmds/members.js";
 
 const allPermissions = util.cache(async () => {
   const members = await api.members();
@@ -101,7 +101,7 @@ const credentials = {
   ca: ca,
 };
 
-import API from "./server/api";
+import API from "./server/api.js";
 
 // Mount the API router at /api/ endpoints
 app.use("/api", API);

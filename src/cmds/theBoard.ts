@@ -1,5 +1,5 @@
-import * as prompt from "../prompt";
-import * as api from "../api/rokort";
+import * as prompt from "simple-cli-prompter";
+import * as api from "../api/rokort.js";
 import colors from "ansi-colors";
 
 export async function run(): Promise<void> {
@@ -30,7 +30,7 @@ export async function run(): Promise<void> {
     case "gf":
       return await generalforsamling();
     case "back":
-      return await (await import("../main")).mainPrompt();
+      return await (await import("../main.js")).mainPrompt();
 
     default:
       throw new Error("Unknown answer");

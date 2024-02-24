@@ -1,8 +1,8 @@
 import got from "got";
-import * as util from "../util/rowerutils";
-import { getConfig } from "../util/config";
-import * as currentSeason from "../util/currentSeason";
-import { createInMemoryCache } from "../util/inMemoryCache";
+import * as util from "../util/rowerutils.js";
+import { getConfig } from "../util/config.js";
+import * as currentSeason from "../util/currentSeason.js";
+import { createInMemoryCache } from "../util/inMemoryCache.js";
 
 export function auth() {
   const config = getConfig();
@@ -21,7 +21,7 @@ function login() {
     // Post to https://asr.rokort.dk/account/loginajax.
     // with an object: "{\"username\":user,\"password\":pass,\"remember\":true}"
     // and get a session key back (the .ASPXAUTH cookie)
-    const resp = await got.post("https://asr.rokort.dk/account/loginajax", {
+    const resp = await got.default.post("https://asr.rokort.dk/account/loginajax", {
       json: {
         username: conf.USER_NAME,
         password: conf.PASSWORD,
@@ -90,7 +90,7 @@ async function fetchMemberRawData(): Promise<Member[]> {
   // Rows: Medlemsnr, brugernavn, Fornavn, Efternavn, Fødselsdag, email, telefon, blokeret, online sidst, antal login, frigivet dato, rettigheder (tags).
   const url =
     "https://asr.rokort.dk/admin/GetMemberGridDataRaw?sidx=TotalLogins&sord=desc&page=1&rows=100000&departmentFilter=&tagFilter=&notTagFilter=&searchText=&customFilter=Status-,MailDeliveryStatus-";
-  const resp = await got.get(url, {
+  const resp = await got.default.get(url, {
     headers: await authHeader(),
   });
 
@@ -184,7 +184,7 @@ export async function getMemberDetails(
   return detailsCache.getOrSet(id, async () => {
     try {
       const url = `https://asr.rokort.dk/api/memberdata/${id}`;
-      const resp = await got.get(url, {
+      const resp = await got.default.get(url, {
         headers: await authHeader(),
       });
 
@@ -228,7 +228,7 @@ type TagData = {
 
 async function fetchRawTags(): Promise<Record<string, TagData>> {
   const url = "https://asr.rokort.dk/api/tag";
-  const resp = await got.get(url, {
+  const resp = await got.default.get(url, {
     headers: await authHeader(),
   });
 
@@ -262,7 +262,7 @@ const getRawTrips = util.cache(async () => {
 
   const rawData: RawTrip[] = JSON.parse(
     (
-      await got.get(url, {
+      await got.default.get(url, {
         headers: await authHeader(),
       })
     ).body

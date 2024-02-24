@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "NodeNext",
     "target": "es6",
-    "lib": ["dom", "ES2019"],
+    "lib": ["dom", "ES2021"],
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "noImplicitAny": true,
     "removeComments": false,
     "preserveConstEnums": true,

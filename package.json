@@ -2,7 +2,8 @@
   "name": "rowlog-navigator",
   "version": "0.0.7",
   "description": "A little tool to navigate through rowlog data",
-  "main": "dist/src/main",
+  "main": "dist/src/main.js",
+  "type": "module",
   "scripts": {
     "test": "npx jest",
     "build": "npx tsc",
@@ -29,7 +30,8 @@
     "ics": "^2.40.0",
     "lodash.merge": "^4.6.2",
     "moment": "^2.29.4",
-    "node-fetch": "^3.3.1"
+    "node-fetch": "^3.3.1",
+    "simple-cli-prompter": "^0.0.7"
   },
   "devDependencies": {
     "@types/app-root-path": "^1.2.4",

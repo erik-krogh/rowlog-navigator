@@ -1,8 +1,8 @@
-import * as prompt from "../prompt";
-import * as api from "../api/rokort";
-import { promptRower } from "../util/rowerutils";
+import * as prompt from "simple-cli-prompter";
+import * as api from "../api/rokort.js";
+import { promptRower } from "../util/rowerutils.js";
 import colors from "ansi-colors";
-import { toPrettyDate } from "./members";
+import { toPrettyDate } from "./members.js";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvilken statestik?", [
@@ -44,7 +44,7 @@ export async function run(): Promise<void> {
     case "distance":
       return await distance(await api.trips());
     case "back":
-      return await (await import("../main")).mainPrompt();
+      return await (await import("../main.js")).mainPrompt();
     default:
       throw new Error("Unknown answer");
   }

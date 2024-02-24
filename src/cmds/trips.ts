@@ -1,5 +1,5 @@
-import * as prompt from "../prompt";
-import * as api from "../api/rokort";
+import * as prompt from "simple-cli-prompter";
+import * as api from "../api/rokort.js";
 import colors from "ansi-colors";
 
 export async function run(): Promise<void> {
@@ -24,7 +24,7 @@ export async function run(): Promise<void> {
     case "popular":
       return await popularTrips();
     case "back":
-      return await (await import("../main")).mainPrompt();
+      return await (await import("../main.js")).mainPrompt();
     default:
       throw new Error("Unknown answer");
   }
@@ -80,7 +80,7 @@ async function promptAfterDetails(trip: api.Trip): Promise<void> {
       console.log(JSON.stringify(trip, null, 2));
       return await promptAfterDetails(trip);
     case "Tilbage":
-      return await (await import("../main")).mainPrompt();
+      return await (await import("../main.js")).mainPrompt();
     default:
       throw new Error("Unknown answer");
   }

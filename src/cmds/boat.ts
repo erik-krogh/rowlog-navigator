@@ -1,6 +1,6 @@
-import * as prompt from "../prompt";
-import * as api from "../api/rokort";
-import { promptRower } from "../util/rowerutils";
+import * as prompt from "simple-cli-prompter";
+import * as api from "../api/rokort.js";
+import { promptRower } from "../util/rowerutils.js";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Hvilen båd statestik?", [
@@ -29,7 +29,7 @@ export async function run(): Promise<void> {
     case "boat-partner":
       return await boatPartner(await api.trips());
     case "back":
-      return await (await import("../main")).mainPrompt();
+      return await (await import("../main.js")).mainPrompt();
     default:
       throw new Error("Unknown answer");
   }

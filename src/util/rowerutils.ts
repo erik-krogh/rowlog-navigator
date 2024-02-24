@@ -1,9 +1,9 @@
-import * as prompt from "../prompt";
-import type * as api from "../api/rokort";
+import * as prompt from "simple-cli-prompter";
+import type * as api from "../api/rokort.js";
 import colors from "ansi-colors";
 
 export async function promptRower(ids?: number[]): Promise<api.Member> {
-  const members = await (await import("../api/rokort")).members();
+  const members = await (await import("../api/rokort.js")).members();
   const idSet = ids ? new Set(ids) : null;
   const rowerSelection = await prompt.ask(
     "Hvilken roer?",
