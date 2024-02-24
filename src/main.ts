@@ -80,7 +80,7 @@ export async function mainPrompt() {
     case "member-stats":
       return await (await import("./cmds/memberStats")).run();
     case "members":
-      return await (await import("./cmds/members")).searchForMember();
+      return await (await import("./cmds/members")).run();
     case "events":
       return await (await import("./cmds/events")).run();
     case "trips":

@@ -2,6 +2,61 @@ import * as prompt from "../prompt";
 import * as colors from "ansi-colors";
 import * as api from "../api/newApi";
 
+export async function run(): Promise<void> {
+  const answer = await prompt.ask("Hvad vil du?", [
+    "Søg efter et medlem",
+    "Eksporter medlemsdata",
+    "Tilbage",
+  ]);
+
+  if (answer === "Søg efter et medlem") {
+    return await searchForMember();
+  } else if (answer === "Eksporter medlemsdata") {
+    return await exportMembers();
+  } else if (answer === "Tilbage") {
+    return await (await import("../main")).mainPrompt();
+  }
+}
+
+export const permissionMap = {
+  "Coastal": "Cx",
+  "Friroet": "R",
+  "Roret": "R",
+  "Instruktør": "I",
+  "Instruktør Sculler": "IS",
+  "K1": "K1",
+  "K2": "K2",
+  "K3": "K3",
+  "Kortturs styrmand": "K1",
+  "Langturs styrmand": "L",
+  "Langturstyrmand": "L",
+  "S": "S",
+  "S1": "S1",
+  "S2": "S2",
+  "Svømmeprøve": "SW",
+  "Vinterstyrmandsret": "V",
+  "Under Instruktion": "UI"
+}
+
+export async function exportMembers() {
+  const members = (await api.members()).getAllMembers();
+  console.log("Eksporterer medlemsliste...");
+  console.log("MemberNumber	FirstName	LastName	UI	R	K1	K2	K3	L	I	S	S1	S2	Cx	IS	SW");
+  const tags = await api.tags();
+  for (const member of members) {
+    let perms = member.permissions.map((p: string) => {
+      const tag = tags[p as any];
+      return permissionMap[tag.name.trim() as keyof typeof permissionMap] || null;
+    }).filter((p) => p !== null);
+    let permsString = "UI	R	K1	K2	K3	L	I	S	S1	S2	Cx	IS	SW".split("\t").map((p) => perms.includes(p) ? "X" : "").join("\t");
+    console.log(
+      `${member.id}	${member.firstName}	${member.lastName}\t${permsString}`
+    );
+  }
+
+  return await run();
+}
+
 export async function searchForMember(): Promise<void> {
   const members = await api.members();
 
