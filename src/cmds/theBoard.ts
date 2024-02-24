@@ -1,6 +1,6 @@
 import * as prompt from "../prompt";
 import * as api from "../api/rokort";
-import * as colors from "ansi-colors";
+import colors from "ansi-colors";
 
 export async function run(): Promise<void> {
   const answer = await prompt.ask("Søg rundt i ture", [
@@ -151,7 +151,6 @@ async function tour() {
     {
       // kanin = medlemsnummer der starter med det nuværende år. E.g. medlemsnummer 19020 startede i 2019.
       const map: Map<number, number> = new Map(); // memberId -> distance
-      const rabbitPrefix = now.getFullYear().toString().substring(2);
 
       for (const trip of trips) {
         for (const participant of trip.participants) {
@@ -173,7 +172,7 @@ async function tour() {
           if (!map.has(participant.id)) {
             map.set(participant.id, new Set());
           }
-          const set = map.get(participant.id)!;
+          const set = map.get(participant.id);
           for (const otherParticipant of trip.participants) {
             set.add(otherParticipant.id);
           }

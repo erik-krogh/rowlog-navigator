@@ -1,9 +1,7 @@
 import * as prompt from "../prompt";
 import * as api from "../api/rokort";
 import { promptRower } from "../util/rowerutils";
-import * as currentSeason from "../util/currentSeason";
-import * as main from "../main";
-import * as colors from "ansi-colors";
+import colors from "ansi-colors";
 import { toPrettyDate } from "./members";
 
 export async function run(): Promise<void> {

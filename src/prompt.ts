@@ -1,4 +1,4 @@
-import * as colors from "ansi-colors";
+import colors from "ansi-colors";
 import enquirer from "enquirer";
 import * as fs from "fs";
 import * as path from "path";

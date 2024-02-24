@@ -12,7 +12,7 @@ const app = express();
 
 app.use(express.static("public", { dotfiles: "allow" }));
 
-const requestLogin = async (
+const requestLogin = (
   req: ExpressStatic.Request,
   res: ExpressStatic.Response,
   next: ExpressStatic.NextFunction
@@ -59,13 +59,15 @@ const allPermissions = util.cache(async () => {
   return permissions;
 }, 60 * 60);
 
-app.post("/permissions", async (req, res) => {
+app.post("/permissions", (req, res) => {
   // the request body contains a JSON array of names, and we respond with a corresponding JSON array of permissions.
   let data = "";
   req.on("data", (chunk) => {
     console.log("Got data: " + chunk);
     data += chunk;
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   req.on("end", async () => {
     console.log("No more data");
     let names = JSON.parse(data) as string[];
@@ -77,20 +79,6 @@ app.post("/permissions", async (req, res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.status(200).send(JSON.stringify(result));
   });
-});
-
-// import { icsAcitivitesExport, icsProtocolExport } from "./server/calendar";
-
-app.get(/events\d*\.ics/, async (req, res) => {
-  console.log("Someone requested the calendar (" + req.url + ") " + new Date());
-  // TODO: Get events working.
-  /* try {
-    res.type("text/calendar");
-    res.status(200).send(await icsAcitivitesExport());
-  } catch (e) {
-    console.error(e);
-    res.status(500).send(e.message);
-  } */
 });
 
 // Certificate

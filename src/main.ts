@@ -1,5 +1,5 @@
 import * as prompt from "./prompt";
-import * as colors from "ansi-colors";
+import colors from "ansi-colors";
 import * as config from "./util/config";
 import { invalidateCaches } from "./util/rowerutils";
 import * as fs from "fs";

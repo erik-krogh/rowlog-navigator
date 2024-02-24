@@ -70,6 +70,7 @@ router.get("/trips", checkToken, async (req, res) => {
 });
 
 // Get a member by ID
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.get("/member/:id", async (req, res) => {
   try {
     const memberId = Number(req.params.id); // Get the value of the 'id' path parameter
@@ -95,6 +96,7 @@ router.get("/member/:id", async (req, res) => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.get("/members", async (req, res) => {
   try {
     const members = await newApi.members();
@@ -102,7 +104,7 @@ router.get("/members", async (req, res) => {
     if (!ids.startsWith("[")) {
       ids = "[" + ids + "]";
     }
-    const memberIds = JSON.parse(ids as string) as number[];
+    const memberIds = JSON.parse(ids) as number[];
 
     const respMembers = memberIds.map((id) => {
       const member = members.getMember(id);

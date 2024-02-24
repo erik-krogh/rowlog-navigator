@@ -35,7 +35,7 @@ export default class Cache {
   async get(key: string): Promise<string> {
     key = key.replace(/\n|=/g, "");
     if (this.cache && this.cache.has(key)) {
-      return this.cache.get(key) as string;
+      return this.cache.get(key);
     }
     return await this.getFresh(key);
   }

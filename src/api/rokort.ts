@@ -4,11 +4,6 @@ import { getConfig } from "../util/config";
 import * as currentSeason from "../util/currentSeason";
 import { createInMemoryCache } from "../util/inMemoryCache";
 
-async function main() {
-  await login();
-  await fetchRawTags();
-}
-
 export function auth() {
   const config = getConfig();
   return Buffer.from(`${config.USER_NAME}:${config.PASSWORD}`).toString(
@@ -17,7 +12,7 @@ export function auth() {
 }
 
 let sessionKey: Promise<string> | undefined;
-async function login() {
+function login() {
   if (typeof sessionKey !== "undefined") {
     return;
   }
