@@ -45,6 +45,10 @@ const allPermissions = util.cache(async () => {
     let perms = member.permissions
       .map((p) => {
         const tag = tags[p];
+        if (!tag) {
+          console.log("Unknown tag: " + p);
+          return null;
+        }
         return (
           permissionMap[tag.name.trim() as keyof typeof permissionMap] || null
         );
