@@ -105,6 +105,7 @@ export function toPrettyDate(date: Date) {
 async function promptAfterDetails(member: api.Member): Promise<void> {
   const answer = await prompt.ask("Hvad nu?", [
     "Søg efter et andet medlem",
+    "Se alt data",
     "Se rå data",
     "Tilbage",
   ]);
@@ -112,6 +113,9 @@ async function promptAfterDetails(member: api.Member): Promise<void> {
   switch (answer) {
     case "Søg efter et andet medlem":
       return await searchForMember();
+    case "Se alt data":
+      console.log(JSON.stringify(member, null, 2));
+      return await promptAfterDetails(member);
     case "Se rå data":
       console.log(JSON.stringify(member.raw, null, 2));
       return await promptAfterDetails(member);

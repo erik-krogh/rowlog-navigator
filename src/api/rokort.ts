@@ -47,25 +47,25 @@ async function authHeader() {
 }
 
 type RawMemberRow = [
-  string, // Medlemsnr (stringified number)
-  string, // Brugernavn
-  string, // Fornavn
-  string, // Efternavn
-  string, // Fødselsdag (dd-mm-yyyy)
-  string, // email
-  string, // telefon
-  string, // blokeret (boolean)
-  string, // frigivet dato (dd-mm-yyyy)
-  string, // antal login (stringified number)
-  string, // online sidst (dd-mm-yyyy)
-  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF
+  string, // Medlemsnr (stringified number) // [0]
+  string, // Profile picture URL // [1]
+  string, // Fornavn // [2]
+  string, // Mellemnavn // [3]
+  string, // Efternavn // [4]
+  string, // Fødselsdag (dd-mm-yyyy) // [5]
+  string, // email // [6]
+  string, // telefon // [7]
+  string, // online sidst (dd-mm-yyyy) // [8]
+  string, // frigivet dato (dd-mm-yyyy) // [9]
+  string, // blokeret (boolean) // [10]
+  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF // [11]
 ];
 
 export type Member = {
   id: number;
   internalId: string;
-  username: string;
   firstName: string;
+  middleName: string;
   lastName: string;
   name: string;
   birthday: Date | null;
@@ -73,7 +73,6 @@ export type Member = {
   phone: string;
   blocked: boolean;
   releasedDate: Date | null;
-  loginCount: number;
   lastOnline: Date | null;
   permissions: string[]; // TODO: Make some lookup.
   raw: RawMemberRow;
@@ -81,7 +80,7 @@ export type Member = {
 
 export type PublicMember = Pick<
   Member,
-  "id" | "username" | "firstName" | "lastName" | "name" | "email"
+  "id" | "firstName" | "lastName" | "name" | "email"
 >;
 
 async function fetchMemberRawData(): Promise<Member[]> {
@@ -99,20 +98,19 @@ async function fetchMemberRawData(): Promise<Member[]> {
   return rows.map((row) => {
     const raw = row.cell;
     // remove repeated spaces
-    const name = `${raw[2]} ${raw[3]}`.replace(/\s+/g, " ").trim();
+    const name = `${raw[2]} ${raw[3]} ${raw[4]}`.replace(/\s+/g, " ").trim();
     return {
       id: parseInt(raw[0]),
       internalId: row.id,
-      username: raw[1],
       firstName: raw[2],
-      lastName: raw[3],
-      birthday: parseSimpleDate(raw[4]),
-      email: raw[5],
-      phone: raw[6],
-      blocked: raw[7] === "true",
-      releasedDate: parseSimpleDate(raw[8]),
-      loginCount: parseInt(raw[9]),
-      lastOnline: parseSimpleDate(raw[10]),
+      middleName: raw[3],
+      lastName: raw[4],
+      birthday: parseSimpleDate(raw[5]),
+      email: raw[6],
+      phone: raw[7],
+      lastOnline: parseSimpleDate(raw[8]),
+      releasedDate: parseSimpleDate(raw[9]),
+      blocked: raw[10] === "true",
       permissions: raw[11].split(","),
       raw,
       name,

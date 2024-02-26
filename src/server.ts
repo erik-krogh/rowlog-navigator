@@ -73,7 +73,6 @@ app.post("/permissions", (req, res) => {
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   req.on("end", async () => {
-    console.log("No more data");
     let names = JSON.parse(data) as string[];
     const allPerms = await allPermissions();
     // remove duplicate spaces in the names
