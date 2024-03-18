@@ -58,7 +58,8 @@ type RawMemberRow = [
   string, // online sidst (dd-mm-yyyy) // [8]
   string, // frigivet dato (dd-mm-yyyy) // [9]
   string, // blokeret (boolean) // [10]
-  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF // [11]
+  string, // ukendt // [11]
+  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF // [12]
 ];
 
 export type Member = {
@@ -111,7 +112,7 @@ async function fetchMemberRawData(): Promise<Member[]> {
       lastOnline: parseSimpleDate(raw[8]),
       releasedDate: parseSimpleDate(raw[9]),
       blocked: raw[10] === "true",
-      permissions: raw[11].split(","),
+      permissions: raw[12].split(","),
       raw,
       name,
     };
