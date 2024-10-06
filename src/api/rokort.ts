@@ -88,9 +88,8 @@ export type PublicMember = Pick<
 async function fetchMemberRawData(): Promise<Member[]> {
   // https://asr.rokort.dk/admin/GetMemberGridDataRaw?page=1&rows=10000&customFilter=Status-,MailDeliveryStatus-
   // The data is in the "rows" property, containing an `{id: ID, cell: rows..}` object.
-  // Rows: Medlemsnr, brugernavn, Fornavn, Efternavn, Fødselsdag, email, telefon, blokeret, online sidst, antal login, frigivet dato, rettigheder (tags).
   const url =
-    "https://asr.rokort.dk/admin/GetMemberGridDataRaw?sidx=TotalLogins&sord=desc&page=1&rows=100000&departmentFilter=&tagFilter=&notTagFilter=&searchText=&customFilter=Status-,MailDeliveryStatus-";
+    "https://asr.rokort.dk/api/memberdata/grid/data?sidx=stamkort_medlemsnummer&sord=desc&page=1&rows=100000&departmentFilter=&tagFilter=&notTagFilter=&searchText=&customFilter=Status-,MailDeliveryStatus-";
   const resp = await got.get(url, {
     headers: await authHeader(),
   });
@@ -110,7 +109,7 @@ async function fetchMemberRawData(): Promise<Member[]> {
       birthday: parseSimpleDate(raw[5]),
       email: raw[6],
       phone: raw[7],
-      lastOnline: parseSimpleDate(raw[8]),
+      lastOnline: parseSimpleDate(raw[8]), // not reliably updated anymore?
       releasedDate: parseSimpleDate(raw[9]),
       blocked: raw[11] === "true",
       permissions: raw[13].split(","),
