@@ -79,7 +79,7 @@ app.post("/permissions", (req, res) => {
     names = names.map((n) => n.replace(/\s+/g, " ").trim());
 
     const result: string[] = names.map((n) => allPerms[n] || "");
-    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Origin", req.headers.referer);
     res.status(200).send(JSON.stringify(result));
   });
 });
