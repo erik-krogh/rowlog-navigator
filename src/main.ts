@@ -88,7 +88,7 @@ async function changeSeason(): Promise<void> {
     currentSeason.POSSIBLE_SEAONS.map((s) => ({
       name: s + "",
       message: s + "",
-    })),
+    }))
   );
 
   currentSeason.changeCurrentSeason(+answer);

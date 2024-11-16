@@ -96,6 +96,10 @@ async function showMemberDetails(member: api.Member) {
         .join(", "),
   );
 
+  const details = await api.getMemberDetails(member);
+  
+  console.log(details["Address"] + ", " + details["PostalZip"] + " " + details["City"]);
+
   return await promptAfterDetails(member);
 }
 
@@ -107,6 +111,7 @@ async function promptAfterDetails(member: api.Member): Promise<void> {
     "Søg efter et andet medlem",
     "Se alt data",
     "Se rå data",
+    "Se detaljer",
     "Tilbage",
   ]);
 
@@ -119,6 +124,11 @@ async function promptAfterDetails(member: api.Member): Promise<void> {
     case "Se rå data":
       console.log(JSON.stringify(member.raw, null, 2));
       return await promptAfterDetails(member);
+    case "Se detaljer": {
+      const details = await api.getMemberDetails(member);
+      console.log(JSON.stringify(details, null, 2));
+      return await promptAfterDetails(member);
+    }
     case "Tilbage":
       return await run();
     default:
