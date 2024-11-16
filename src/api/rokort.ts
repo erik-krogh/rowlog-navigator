@@ -60,7 +60,8 @@ type RawMemberRow = [
   string, // unknown? // [10]
   string, // blokeret (boolean) // [11]
   string, // udmeldt // [12]
-  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF // [13]
+  string, // ukend??? Mobilepay? // [13]
+  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF // [14]
 ];
 
 export type Member = {
@@ -112,7 +113,7 @@ async function fetchMemberRawData(): Promise<Member[]> {
       lastOnline: parseSimpleDate(raw[8]), // not reliably updated anymore?
       releasedDate: parseSimpleDate(raw[9]),
       blocked: raw[11] === "true",
-      permissions: raw[13].split(","),
+      permissions: raw[14].split(","),
       raw,
       name,
     };
