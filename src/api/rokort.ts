@@ -89,7 +89,7 @@ async function fetchMemberRawData(): Promise<Member[]> {
   // https://asr.rokort.dk/admin/GetMemberGridDataRaw?page=1&rows=10000&customFilter=Status-,MailDeliveryStatus-
   // The data is in the "rows" property, containing an `{id: ID, cell: rows..}` object.
   const url =
-    "https://asr.rokort.dk/api/memberdata/grid/data?sidx=stamkort_medlemsnummer&sord=desc&page=1&rows=100000&departmentFilter=&tagFilter=&notTagFilter=&searchText=&customFilter=Status-,MailDeliveryStatus-";
+    "https://asr.rokort.dk/api/memberdata/grid/data?sidx=stamkort_medlemsnummer&sord=asc&page=1&rows=100000&departmentFilter=&tagFilter=&allTagFilter=&notTagFilter=&searchText=&customFilter=Status-,MailDeliveryStatus-";
   const resp = await got.get(url, {
     headers: await authHeader(),
   });
@@ -183,6 +183,7 @@ export async function getMemberDetails(
   return detailsCache.getOrSet(id, async () => {
     try {
       const url = `https://asr.rokort.dk/api/memberdata/${id}`;
+      console.log("Requesting member details from " + url);
       const resp = await got.get(url, {
         headers: await authHeader(),
       });
@@ -227,6 +228,7 @@ type TagData = {
 
 async function fetchRawTags(): Promise<Record<string, TagData>> {
   const url = "https://asr.rokort.dk/api/tag";
+  console.log("Requesting tags from " + url);
   const resp = await got.get(url, {
     headers: await authHeader(),
   });
@@ -259,6 +261,7 @@ type RawTrip = {
 const getRawTrips = util.cache(async () => {
   const url = "https://asr.rokort.dk/api/report/CR2517138924777463952";
 
+  console.log("Requesting trips from " + url);
   const rawData: RawTrip[] = JSON.parse(
     (
       await got.get(url, {
