@@ -17,6 +17,10 @@ export async function run(): Promise<void> {
       message: "Generalforsamling",
     },
     {
+      name: "kanin-stat",
+      message: "Kanin statistik",
+    },
+    {
       name: "back",
       message: "Tilbage",
     },
@@ -29,11 +33,41 @@ export async function run(): Promise<void> {
       return await tour();
     case "gf":
       return await generalforsamling();
+    case "kanin-stat":
+      return await rabbitStats();
     case "back":
       return await (await import("../main.js")).mainPrompt();
 
     default:
       throw new Error("Unknown answer");
+  }
+}
+
+export async function rabbitStats() {
+  // loop over all the members. 
+  const members = (await api.members());
+  const trips = (await api.trips()).getTrips();
+  for (const member of members.getAllMembers()) {
+    if (!members.isRabbit(member)) {
+      continue;
+    }
+    let latestTripDate = new Date(0);
+    let totalDistance = 0;
+    for (const trip of trips) {
+      if (trip.participants.find((p) => p.id === member.id)) {
+        totalDistance += trip.distance || 0;
+        if (trip.startDateTime > latestTripDate) {
+          latestTripDate = trip.startDateTime;
+        }
+      }
+    }
+    const daysSinceLastTrip = Math.floor( 
+      (new Date().getTime() - latestTripDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    // name, id, total distance, days since last trip
+    console.log(
+      `${member.name}\t${member.email}\t${member.id}\t${totalDistance}\t${daysSinceLastTrip}`,
+    );
   }
 }
 
