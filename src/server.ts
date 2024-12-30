@@ -78,6 +78,14 @@ app.post("/permissions", (req, res) => {
     // remove duplicate spaces in the names
     names = names.map((n) => n.replace(/\s+/g, " ").trim());
 
+    // happens if someone is on the waiting list. I could solve it in the frontend, but this is fine.
+    names = names.map(n => {
+      if (n.endsWith("Venteliste")) {
+        return n.slice(0, -"Venteliste".length);
+      }
+      return n;
+    })
+
     const result: string[] = names.map((n) => allPerms[n] || "");
     let referer = req.headers.referer;
     if (referer.endsWith("/")) {
