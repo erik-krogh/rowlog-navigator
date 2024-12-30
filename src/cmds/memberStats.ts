@@ -226,7 +226,7 @@ async function distance(data: api.TripData) {
   // sort and print
   const sorted = Array.from(distMap.entries()).sort((a, b) => b[1] - a[1]);
   sorted.forEach(([id, distance]) => {
-    console.log(members.getMember(id).name + "\t" + id + "\t" + +distance + "");
+    console.log(members.getMember(id).name + "\t" + id + "\t" + +distance + "\t" + members.getMember(id).email);
   });
 
   return await run();
