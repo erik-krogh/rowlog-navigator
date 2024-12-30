@@ -61,7 +61,8 @@ type RawMemberRow = [
   string, // blokeret (boolean) // [11]
   string, // udmeldt // [12]
   string, // ukend??? Mobilepay? // [13]
-  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF // [14]
+  string, // ukendt
+  string, // rettigheder (tags), TagXYZ,TagABC,TagDEF // [15]
 ];
 
 export type Member = {
@@ -113,7 +114,7 @@ async function fetchMemberRawData(): Promise<Member[]> {
       lastOnline: parseSimpleDate(raw[8]), // not reliably updated anymore?
       releasedDate: parseSimpleDate(raw[9]),
       blocked: raw[11] === "true",
-      permissions: raw[14].split(","),
+      permissions: raw[15].split(","),
       raw,
       name,
     };
@@ -262,7 +263,6 @@ type RawTrip = {
 const getRawTrips = util.cache(async () => {
   const url = "https://asr.rokort.dk/api/report/CR2517138924777463952";
 
-  console.log("Requesting trips from " + url);
   const rawData: RawTrip[] = JSON.parse(
     (
       await got.get(url, {
