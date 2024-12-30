@@ -89,6 +89,16 @@ app.post("/permissions", (req, res) => {
   });
 });
 
+app.options("/*", (req, res) => {
+  console.log("Got an OPTIONS request, responding with CORS headers");
+  res.header("Access-Control-Allow-Origin", "https://asr.rokort.dk");
+  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "X-PINGOTHER, Content-Type, Authorization");
+  res.header("Access-Control-Max-Age", "86400");
+  res.sendStatus(204);
+  res.end();
+});
+
 // Certificate
 const privateKey = fs.readFileSync(
   "/etc/letsencrypt/live/asr1.webbies.dk/privkey.pem",
