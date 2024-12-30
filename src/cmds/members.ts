@@ -57,7 +57,7 @@ export async function exportMembers() {
       .map((p) => (perms.includes(p) ? "X" : ""))
       .join("\t");
     console.log(
-      `${member.id}	${member.firstName}	${member.lastName}\t${permsString}`,
+      `${member.id}\t${member.firstName}	${member.lastName}\t${member.email}\t${permsString}`,
     );
   }
 
