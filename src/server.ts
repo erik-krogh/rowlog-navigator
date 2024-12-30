@@ -79,8 +79,12 @@ app.post("/permissions", (req, res) => {
     names = names.map((n) => n.replace(/\s+/g, " ").trim());
 
     const result: string[] = names.map((n) => allPerms[n] || "");
-    console.log("Referring to: \"" + req.headers.referer + "\"");
-    res.header("Access-Control-Allow-Origin", req.headers.referer);
+    let referer = req.headers.referer;
+    if (referer.endsWith("/")) {
+      referer = referer.slice(0, -1);
+    }
+    console.log("Referring to: \"" + referer + "\"");
+    res.header("Access-Control-Allow-Origin", referer);
     res.status(200).send(JSON.stringify(result));
   });
 });
